@@ -2,6 +2,7 @@
 #define FRAME_H
 
 #include <math.h>
+#include <iostream>
 
 // Cтруктура для задания цвета
 typedef struct tagCOLOR
