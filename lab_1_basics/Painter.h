@@ -43,7 +43,7 @@ public:
 		// Размер рисунка возьмём меньше (7 / 8), чтобы он не касался границ экрана 
 		float a = 7.0f / 8 * ((W < H) ? W - 1 : H - 1) / sqrt(2);
 		if (a < 1) return; // Если окно очень маленькое, то ничего не рисуем
-		float angle = global_angle; // Угол поворота
+		float angle = -global_angle; // Угол поворота
 		a = a / 2;
 		coordinate C = { W / 2, H / 2 };
 
