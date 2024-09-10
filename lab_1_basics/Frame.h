@@ -4,13 +4,13 @@
 #include <math.h>
 #include <iostream>
 
-// Cтруктура для задания цвета
+// CС‚СЂСѓРєС‚СѓСЂР° РґР»СЏ Р·Р°РґР°РЅРёСЏ С†РІРµС‚Р°
 typedef struct tagCOLOR
 {
-	unsigned char RED;		// Компонента красного цвета
-	unsigned char GREEN;	// Компонента зелёного цвета
-	unsigned char BLUE;		// Компонента синего цвета
-	unsigned char ALPHA;	// Прозрачность (альфа канал)
+	unsigned char RED;		// РљРѕРјРїРѕРЅРµРЅС‚Р° РєСЂР°СЃРЅРѕРіРѕ С†РІРµС‚Р°
+	unsigned char GREEN;	// РљРѕРјРїРѕРЅРµРЅС‚Р° Р·РµР»С‘РЅРѕРіРѕ С†РІРµС‚Р°
+	unsigned char BLUE;		// РљРѕРјРїРѕРЅРµРЅС‚Р° СЃРёРЅРµРіРѕ С†РІРµС‚Р°
+	unsigned char ALPHA;	// РџСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ (Р°Р»СЊС„Р° РєР°РЅР°Р»)
 
 	tagCOLOR() : RED(0), GREEN(0), BLUE(0), ALPHA(255) { }
 	tagCOLOR(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha = 255) : RED(red), GREEN(green), BLUE(blue), ALPHA(alpha) { }
@@ -26,32 +26,32 @@ template<typename TYPE> void swap(TYPE& a, TYPE& b)
 }
 
 
-// Буфер кадра
+// Р‘СѓС„РµСЂ РєР°РґСЂР°
 class Frame
 {
-	// Указатель на массив пикселей
-	// Буфер кадра будет представлять собой матрицу, которая располагается в памяти в виде непрерывного блока
+	// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°СЃСЃРёРІ РїРёРєСЃРµР»РµР№
+	// Р‘СѓС„РµСЂ РєР°РґСЂР° Р±СѓРґРµС‚ РїСЂРµРґСЃС‚Р°РІР»СЏС‚СЊ СЃРѕР±РѕР№ РјР°С‚СЂРёС†Сѓ, РєРѕС‚РѕСЂР°СЏ СЂР°СЃРїРѕР»Р°РіР°РµС‚СЃСЏ РІ РїР°РјСЏС‚Рё РІ РІРёРґРµ РЅРµРїСЂРµСЂС‹РІРЅРѕРіРѕ Р±Р»РѕРєР°
 	COLOR* pixels;
 
-	// Указатели на строки пикселей буфера кадра
+	// РЈРєР°Р·Р°С‚РµР»Рё РЅР° СЃС‚СЂРѕРєРё РїРёРєСЃРµР»РµР№ Р±СѓС„РµСЂР° РєР°РґСЂР°
 	COLOR** matrix;
 
 public:
 
-	// Размеры буфера кадра
+	// Р Р°Р·РјРµСЂС‹ Р±СѓС„РµСЂР° РєР°РґСЂР°
 	int width, height;
 
 	Frame(int _width, int _height) : width(_width), height(_height)
 	{
 		int size = width * height;
 
-		// Создание буфера кадра в виде непрерывной матрицы пикселей
+		// РЎРѕР·РґР°РЅРёРµ Р±СѓС„РµСЂР° РєР°РґСЂР° РІ РІРёРґРµ РЅРµРїСЂРµСЂС‹РІРЅРѕР№ РјР°С‚СЂРёС†С‹ РїРёРєСЃРµР»РµР№
 		pixels = new COLOR[size];
 
-		// Указатели на строки пикселей запишем в отдельный массив
+		// РЈРєР°Р·Р°С‚РµР»Рё РЅР° СЃС‚СЂРѕРєРё РїРёРєСЃРµР»РµР№ Р·Р°РїРёС€РµРј РІ РѕС‚РґРµР»СЊРЅС‹Р№ РјР°СЃСЃРёРІ
 		matrix = new COLOR* [height];
 
-		// Инициализация массива указателей
+		// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РјР°СЃСЃРёРІР° СѓРєР°Р·Р°С‚РµР»РµР№
 		for (int i = 0; i < height; i++)
 		{
 			matrix[i] = pixels + i * width;
@@ -59,33 +59,33 @@ public:
 	}
 
 
-	// Задаёт цвет color пикселю с координатами (x, y)
+	// Р—Р°РґР°С‘С‚ С†РІРµС‚ color РїРёРєСЃРµР»СЋ СЃ РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё (x, y)
 	void SetPixel(int x, int y, COLOR color)
 	{
 		matrix[y][x] = color;
 	}
 
-	// Возвращает цвет пикселя с координатами (x, y)
+	// Р’РѕР·РІСЂР°С‰Р°РµС‚ С†РІРµС‚ РїРёРєСЃРµР»СЏ СЃ РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё (x, y)
 	COLOR GetPixel(int x, int y) 
 	{
 		return matrix[y][x];
 	}
 
 
-	// Рисование окружности
+	// Р РёСЃРѕРІР°РЅРёРµ РѕРєСЂСѓР¶РЅРѕСЃС‚Рё
 	void Circle(int x0, int y0, int radius, COLOR color)
 	{
 		int x = 0, y = radius;
 		int DSUM = 2 * x * x + 2 * y * y - 2 * radius * radius - 2 * y + 1;
 		while(x < y)
 		{
-			// Если ближе точка (x, y - 1), то смещаемся к ней
+			// Р•СЃР»Рё Р±Р»РёР¶Рµ С‚РѕС‡РєР° (x, y - 1), С‚Рѕ СЃРјРµС‰Р°РµРјСЃСЏ Рє РЅРµР№
 			if (DSUM > 0) {
 				DSUM -= 4 * y - 4;
 				y--;
 			}
 
-			// Перенос и отражение вычисленных координат на все октанты окружности 
+			// РџРµСЂРµРЅРѕСЃ Рё РѕС‚СЂР°Р¶РµРЅРёРµ РІС‹С‡РёСЃР»РµРЅРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚ РЅР° РІСЃРµ РѕРєС‚Р°РЅС‚С‹ РѕРєСЂСѓР¶РЅРѕСЃС‚Рё 
 			SetPixel(x0 + x, y0 + y, color);
 			SetPixel(x0 + x, y0 - y, color);
 			SetPixel(x0 + y, y0 + x, color);
@@ -100,7 +100,7 @@ public:
 	}
 
 
-	// Рисование отрезка
+	// Р РёСЃРѕРІР°РЅРёРµ РѕС‚СЂРµР·РєР°
 	void DrawLine(int x1, int y1, int x2, int y2, COLOR color)
 	{
 		int dy = y2 - y1, dx = x2 - x1;
@@ -114,62 +114,50 @@ public:
 		{
 			if (x2 < x1)
 			{
-				// Обмен местами точек (x1, y1) и (x2, y2)
+				// РћР±РјРµРЅ РјРµСЃС‚Р°РјРё С‚РѕС‡РµРє (x1, y1) Рё (x2, y2)
 				swap(x1, x2);
 				swap(y1, y2);
 				dx = -dx; dy = -dy;
 			}
 			
 			int y = y1;
+			int sign_factor = dy < 0 ? 1 : -1;
+			int sumd = - 2 * (y - y1) * dx + sign_factor * dx;
 			for (int x = x1; x <= x2; x++)
 			{
-				if (dy < 0) {
-					int D1 = (x - x1) * dy - (y - y1) * dx;
-					int D2 = (x - x1) * dy - (y - 1 - y1) * dx;
-					if (D1 < -D2)
-						y--;
-
-					matrix[y][x] = color;
-				} else {
-					int D1 = (x - x1) * dy - (y - y1) * dx;
-					int D2 = (x - x1) * dy - (y + 1 - y1) * dx;
-					if (D1 > -D2)
-						y++;
-
-					matrix[y][x] = color;
+				if (sign_factor * sumd < 0) {
+					y -= sign_factor;
+					sumd += sign_factor * dx;
 				}
 
+				sumd += dy;
+
+				matrix[y][x] = color;
 			}
 		}
 		else
 		{ 
 			if (y2 < y1)
 			{
-				// Обмен местами точек (x1, y1) и (x2, y2)
+				// РћР±РјРµРЅ РјРµСЃС‚Р°РјРё С‚РѕС‡РµРє (x1, y1) Рё (x2, y2)
 				swap(x1, x2);
 				swap(y1, y2);
 				dx = -dx; dy = -dy;
 			}
 
 			int x = x1;
+			int sign_factor = dx > 0 ? 1 : -1;
+			int sumd = 2 * (x - x1) * dy + sign_factor * dy;
 			for (int y = y1; y <= y2; y++)
 			{
-				if (dx > 0) {
-					int D1 = (x - x1) * dy - (y - y1) * dx;
-					int D2 = (x + 1 - x1) * dy - (y - y1) * dx;
-					if (D1 < -D2)
-						x++;
-
-					matrix[y][x] = color;
+				if (sign_factor * sumd < 0) {
+					x += sign_factor;
+					sumd += sign_factor * dy;
 				}
-				else {
-					int D1 = (x - x1) * dy - (y - y1) * dx;
-					int D2 = (x - 1 - x1) * dy - (y - y1) * dx;
-					if (D1 > -D2)
-						x--;
 
-					matrix[y][x] = color;
-				}
+				sumd -= dx;
+
+				matrix[y][x] = color;
 			}
 		}
 	}
