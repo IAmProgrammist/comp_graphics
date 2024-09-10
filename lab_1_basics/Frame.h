@@ -76,15 +76,14 @@ public:
 	void Circle(int x0, int y0, int radius, COLOR color)
 	{
 		int x = 0, y = radius;
+		int DSUM = 2 * x * x + 2 * y * y - 2 * radius * radius - 2 * y + 1;
 		while(x < y)
 		{
-			// Определяем, какая точка (пиксель): (x, y) или (x, y - 1) ближе к линии окружности
-			int D1 = x * x + y * y - radius * radius;
-			int D2 = x * x + (y - 1) * (y - 1) - radius * radius;
-			
 			// Если ближе точка (x, y - 1), то смещаемся к ней
-			if (D1 > -D2)
+			if (DSUM > 0) {
+				DSUM -= 4 * y - 4;
 				y--;
+			}
 
 			// Перенос и отражение вычисленных координат на все октанты окружности 
 			SetPixel(x0 + x, y0 + y, color);
@@ -96,6 +95,7 @@ public:
 			SetPixel(x0 - y, y0 + x, color);
 			SetPixel(x0 - y, y0 - x, color);
 			x++;
+			DSUM -= -4 * x - 2;
 		}
 	}
 
@@ -120,14 +120,25 @@ public:
 				dx = -dx; dy = -dy;
 			}
 			
-			int y, dx2 = dx / 2, p = 0;
-			if (dy < 0) dx2 = -dx2;
+			int y = y1;
 			for (int x = x1; x <= x2; x++)
 			{
-				// y = (dy * (x - x1) + dx2) / dx + y1;
-				y = (p + dx2) / dx + y1;
-				p += dy;
-				matrix[y][x] = color;
+				if (dy < 0) {
+					int D1 = (x - x1) * dy - (y - y1) * dx;
+					int D2 = (x - x1) * dy - (y - 1 - y1) * dx;
+					if (D1 < -D2)
+						y--;
+
+					matrix[y][x] = color;
+				} else {
+					int D1 = (x - x1) * dy - (y - y1) * dx;
+					int D2 = (x - x1) * dy - (y + 1 - y1) * dx;
+					if (D1 > -D2)
+						y++;
+
+					matrix[y][x] = color;
+				}
+
 			}
 		}
 		else
@@ -140,14 +151,25 @@ public:
 				dx = -dx; dy = -dy;
 			}
 
-			int x, dy2 = dy / 2, p = 0;
-			if (dx < 0) dy2 = -dy2;
+			int x = x1;
 			for (int y = y1; y <= y2; y++)
 			{
-				// x = (dx * (y - y1) + dy2) / dy + x1;
-				x = (p + dy2) / dy + x1;
-				p += dx;
-				matrix[y][x] = color;
+				if (dx > 0) {
+					int D1 = (x - x1) * dy - (y - y1) * dx;
+					int D2 = (x + 1 - x1) * dy - (y - y1) * dx;
+					if (D1 < -D2)
+						x++;
+
+					matrix[y][x] = color;
+				}
+				else {
+					int D1 = (x - x1) * dy - (y - y1) * dx;
+					int D2 = (x - 1 - x1) * dy - (y - y1) * dx;
+					if (D1 > -D2)
+						x--;
+
+					matrix[y][x] = color;
+				}
 			}
 		}
 	}
