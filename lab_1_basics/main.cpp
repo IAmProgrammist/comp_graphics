@@ -226,7 +226,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
             }
             if (wParam == VK_F1)
             {
-                MessageBoxA(hWnd, "Работу выполнил студент группы ПВ-221 Колесников А.И.", "О программе", MB_ICONINFORMATION);
+                MessageBoxA(hWnd, "Работу выполнил студент группы ПВ-223 Пахомов В.А.", "О программе", MB_ICONINFORMATION);
             }
             break;
 

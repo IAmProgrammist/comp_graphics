@@ -99,6 +99,53 @@ public:
 		}
 	}
 
+	inline double getangle(int x, int y) {
+		double x1 = 0;
+		double y1 = 1;
+		double x2 = x;
+		double y2 = y;
+
+		double dot = x1 * x2 + y1 * y2;
+		double det = x1 * y2 - y1 * x2;
+		return atan2(det, dot);
+	}
+
+	// Рисование окружности
+	void SectorCircle(double dega, double degb, int x0, int y0, int radius, COLOR color)
+	{
+		int x = 0, y = radius;
+		int DSUM = 2 * x * x + 2 * y * y - 2 * radius * radius - 2 * y + 1;
+		while (x < y)
+		{
+			// Если ближе точка (x, y - 1), то смещаемся к ней
+			if (DSUM > 0) {
+				DSUM -= 4 * y - 4;
+				y--;
+			}
+
+			// Перенос и отражение вычисленных координат на все октанты окружности 
+			double a = getangle(x, y);
+			if (a >= dega && a <= degb) SetPixel(x0 + x, y0 + y, color);
+			a = getangle(x, -y);
+			if (a >= dega && a <= degb) SetPixel(x0 + x, y0 - y, color);
+			a = getangle(y, x);
+			if (a >= dega && a <= degb) SetPixel(x0 + y, y0 + x, color);
+			a = getangle(y, -x);
+			if (a >= dega && a <= degb) SetPixel(x0 + y, y0 - x, color);
+			a = getangle(-x, y);
+			if (a >= dega && a <= degb) SetPixel(x0 - x, y0 + y, color);
+			a = getangle(-x, -y);
+			if (a >= dega && a <= degb) SetPixel(x0 - x, y0 - y, color);
+			a = getangle(-y, x);
+			if (a >= dega && a <= degb) SetPixel(x0 - y, y0 + x, color);
+			a = getangle(-y, -x);
+			if (a >= dega && a <= degb) SetPixel(x0 - y, y0 - x, color);
+
+			x++;
+			DSUM -= -4 * x - 2;
+		}
+	}
+
 
 	// Рисование отрезка
 	void DrawLine(int x1, int y1, int x2, int y2, COLOR color)
