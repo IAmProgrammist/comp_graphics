@@ -276,32 +276,6 @@ public:
 
 	}
 
-	void Circle(int x0, int y0, int radius, COLOR color)
-	{
-		int x = 0, y = radius;
-		int DSUM = 2 * x * x + 2 * y * y - 2 * radius * radius - 2 * y + 1;
-		while (x < y)
-		{
-			// Если ближе точка (x, y - 1), то смещаемся к ней
-			if (DSUM > 0) {
-				DSUM -= 4 * y - 4;
-				y--;
-			}
-
-			// Перенос и отражение вычисленных координат на все октанты окружности 
-			SetPixel(x0 + x, y0 + y, color);
-			SetPixel(x0 + x, y0 - y, color);
-			SetPixel(x0 + y, y0 + x, color);
-			SetPixel(x0 + y, y0 - x, color);
-			SetPixel(x0 - x, y0 + y, color);
-			SetPixel(x0 - x, y0 - y, color);
-			SetPixel(x0 - y, y0 + x, color);
-			SetPixel(x0 - y, y0 - x, color);
-			x++;
-			DSUM -= -4 * x - 2;
-		}
-	}
-
 	bool IsPointInCircle(int x0, int y0, int radius, int point_x, int point_y)
 	{
 		return (x0 - point_x) * (x0 - point_x) + (y0 - point_y) * (y0 - point_y) < radius * radius;
@@ -395,70 +369,6 @@ public:
 			DSUM -= -4 * x - 2;
 		}
 	}
-
-	// Рисование отрезка
-	void DrawLine(int x1, int y1, int x2, int y2, COLOR color)
-	{
-		int dy = y2 - y1, dx = x2 - x1;
-		if (dx == 0 && dy == 0)
-		{
-			matrix[y1][x1] = color;
-			return;
-		}
-
-		if (abs(dx) > abs(dy))
-		{
-			if (x2 < x1)
-			{
-				// Обмен местами точек (x1, y1) и (x2, y2)
-				swap(x1, x2);
-				swap(y1, y2);
-				dx = -dx; dy = -dy;
-			}
-
-			int y = y1;
-			int sign_factor = dy < 0 ? 1 : -1;
-			int sumd = -2 * (y - y1) * dx + sign_factor * dx;
-			for (int x = x1; x <= x2; x++)
-			{
-				if (sign_factor * sumd < 0) {
-					y -= sign_factor;
-					sumd += sign_factor * dx;
-				}
-
-				sumd += dy;
-
-				matrix[y][x] = color;
-			}
-		}
-		else
-		{
-			if (y2 < y1)
-			{
-				// Обмен местами точек (x1, y1) и (x2, y2)
-				swap(x1, x2);
-				swap(y1, y2);
-				dx = -dx; dy = -dy;
-			}
-
-			int x = x1;
-			int sign_factor = dx > 0 ? 1 : -1;
-			int sumd = 2 * (x - x1) * dy + sign_factor * dy;
-			for (int y = y1; y <= y2; y++)
-			{
-				if (sign_factor * sumd < 0) {
-					x += sign_factor;
-					sumd += sign_factor * dy;
-				}
-
-				sumd -= dx;
-
-				matrix[y][x] = color;
-			}
-		}
-	}
-
-
 
 	~Frame(void)
 	{
