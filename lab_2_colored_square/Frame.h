@@ -302,6 +302,21 @@ public:
 		}
 	}
 
+	bool IsPointInCircle(int x0, int y0, int radius, int point_x, int point_y)
+	{
+		return (x0 - point_x) * (x0 - point_x) + (y0 - point_y) * (y0 - point_y) < radius * radius;
+	}
+
+	bool IsPointInTriangle(float x0, float y0, float x1, float y1, float x2, float y2, float point_x, float point_y)
+	{
+		float S = (y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2);
+		float h0 = ((y1 - y2) * (point_x - x2) + (x2 - x1) * (point_y - y2)) / S;
+		float h1 = ((y2 - y0) * (point_x - x2) + (x0 - x2) * (point_y - y2)) / S;
+		float h2 = 1 - h0 - h1;
+
+		return h0 >= 0 && h1 >= 0 && h2 >= 0;
+	}
+
 	template <class InterpolatorClass>
 	void Circle(int x0, int y0, int radius, InterpolatorClass& Interpolator)
 	{

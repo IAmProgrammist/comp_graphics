@@ -36,7 +36,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs,
         return 0;
 
     hWnd = CreateWindowA(szWinName, // Создать окно
-        "Лабораторная работа №2. Растровая заливка геометрических фигур",
+        "Лабораторная работа №2. Растровые алгоритмы",
         WS_OVERLAPPEDWINDOW, // Стиль окна
         CW_USEDEFAULT, // x-координата
         CW_USEDEFAULT, // y-координата
@@ -52,7 +52,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs,
         0, STATUSCLASSNAMEA, NULL,
         WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
         0, 0, 0, 0,
-        hWnd, (HMENU) 10001,
+        hWnd, (HMENU)10001,
         hThisInstance, NULL
     );
 
@@ -64,7 +64,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs,
     UpdateWindow(hWnd); // Перерисовать окно
 
     while (GetMessage(&msg, NULL, 0, 0)) // Запустить цикл обработки сообщений
-    { 
+    {
         TranslateMessage(&msg); // Разрешить использование клавиатуры
         DispatchMessage(&msg); // Вернуть управление операционной системе Windows
     }
@@ -73,191 +73,189 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs,
 
 }
 
-
 // Следующая функция вызывается операционной системой Windows и получает в качестве
 // параметров сообщения из очереди сообщений данного приложения
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static int pixelSize = 1; // Размер "большого" пикселя
+    static int pixelSize = 8; // Размер "большого" пикселя
 
     switch (message)
     {
         // Обработка сообщения на создание окна
-        case WM_CREATE:
-        {
-            // Создаем таймер, посылающий сообщения
-            // функции окна примерно 30 раз в секунду
-            SetTimer(hWnd, 1, 1000/30, NULL);
+    case WM_CREATE:
+    {
+        // Создаем таймер, посылающий сообщения
+        // функции окна примерно 30 раз в секунду
+        SetTimer(hWnd, 1, 1000 / 30, NULL);
+    }
+    break;
+
+
+    // Обработка сообщения на перерисовку окна
+    case WM_PAINT:
+    {
+        PAINTSTRUCT ps;
+
+        HDC hdc = BeginPaint(hWnd, &ps);
+
+        // Определяем ширину и высоту окна
+        RECT rect = ps.rcPaint;
+        GetClientRect(hWnd, &rect);
+
+        int width = rect.right - rect.left;
+        int height = rect.bottom - rect.top;
+
+        // Рисование в буфер кадра
+
+        int ratio = pixelSize; // Размер "большого" пикселя
+
+        static int W = 0;
+        static int H = 0;
+        static Frame* frame = new Frame(W, H); // Отнимем высоту StatusBar'а
+        int newW = width / ratio;
+        int newH = (height - 22) / ratio;
+        if (newW != W || newH != H) {
+            W = newW;
+            H = newH;
+            delete frame;
+            frame = new Frame(W, H);
         }
-        break;
 
+        Painter painter;
+        painter.Draw(*frame);
 
-        // Обработка сообщения на перерисовку окна
-        case WM_PAINT:
+        // Системная структура для хранения цвета пикселя
+        // Буфер кадра, который будет передаваться операционной системе, должен состоять из массива этих структур
+        // Она не совпадает с порядком следования цветов в формате RBG
+        typedef struct tagRGBPIXEL
         {
-            PAINTSTRUCT ps;
+            unsigned char BLUE;		// Компонента синего цвета
+            unsigned char GREEN;	// Компонента зелёного цвета
+            unsigned char RED;		// Компонента красного цвета
+            unsigned char ALPHA;    // Прозрачность
+        } RGBPIXEL;
 
-            HDC hdc = BeginPaint(hWnd, &ps);
+        // Выделение памяти для второго буфера, который будет передаваться функции CreateBitmap для создания картинки
+        RGBPIXEL* bitmap = (RGBPIXEL*)HeapAlloc(GetProcessHeap(), 0, width * height * sizeof(RGBPIXEL));
 
-            // Определяем ширину и высоту окна
-            RECT rect = ps.rcPaint;
-            GetClientRect(hWnd, &rect);
-
-        
-            int width = rect.right - rect.left;
-            int height = rect.bottom - rect.top;
-
-            // Рисование в буфер кадра
-
-            int ratio = pixelSize; // Размер "большого" пикселя
-
-            static int W = 0;
-            static int H = 0;
-            static Frame* frame = new Frame(W, H); // Отнимем высоту StatusBar'а
-            int newW = width / ratio;
-            int newH = (height - 22) / ratio;
-            if (newW != W || newH != H) {
-                W = newW;
-                H = newH;
-                delete frame;
-                frame = new Frame(W, H);
+        // Копирование массива пикселей в соответствии с системным форматом пикселя и масштабирование картинки
+        // W и H - ширина и высота изображения в буфере кадра
+        // ratio - коэффициент масштабирования пикселей
+        for (int y = 0; y < H * ratio; y++)
+            for (int x = 0; x < W * ratio; x++)
+            {
+                RGBPIXEL* pixel = bitmap + y * width + x;
+                COLOR color = frame->GetPixel(x / ratio, y / ratio);
+                pixel->RED = color.RED;
+                pixel->GREEN = color.GREEN;
+                pixel->BLUE = color.BLUE;
+                pixel->ALPHA = color.ALPHA;
             }
 
-            Painter painter;
-            
-            // Вычислим время, которое нужно затратить для рисования одного кадра
-            char repaint_time[50];
-            DWORD t1 = GetTickCount();
-            painter.Draw(*frame);
-            sprintf_s(repaint_time, "Время перерисовки: %d миллисекунд", GetTickCount() - t1);
 
-            // Системная структура для хранения цвета пикселя
-            // Буфер кадра, который будет передаваться операционной системе, должен состоять из массива этих структур
-            // Она не совпадает с порядком следования цветов в формате RBG
-            typedef struct tagRGBPIXEL
-            {
-                unsigned char BLUE;		// Компонента синего цвета
-                unsigned char GREEN;	// Компонента зелёного цвета
-                unsigned char RED;		// Компонента красного цвета
-                unsigned char ALPHA;    // Прозрачность
-            } RGBPIXEL;
+        // Получить дескриптор на новое растровое изображение
+        HBITMAP hBitMap = CreateBitmap(width, height, 1, sizeof(RGBPIXEL) * 8, bitmap);
 
-            // Выделение памяти для второго буфера, который будет передаваться функции CreateBitmap для создания картинки
-            RGBPIXEL* bitmap = (RGBPIXEL*) HeapAlloc(GetProcessHeap(), 0, (size_t)width * height * sizeof(RGBPIXEL));
+        // Освободить память, которую занимает буфер цвета
+        HeapFree(GetProcessHeap(), 0, bitmap);
 
-            // Копирование массива пикселей в соответствии с системным форматом пикселя и масштабирование картинки
-            // W и H - ширина и высота изображения в буфере кадра
-            // ratio - коэффициент масштабирования пикселей
-            for (int y = 0; y < H * ratio; y++)
-                for (int x = 0; x < W * ratio; x++)
-                {
-                    RGBPIXEL* pixel = bitmap + (size_t)y * width + x;
-                    COLOR color = frame->GetPixel(x / ratio, y / ratio);
-                    pixel->RED = color.RED;
-                    pixel->GREEN = color.GREEN;
-                    pixel->BLUE = color.BLUE;
-                    pixel->ALPHA = color.ALPHA;
-                }
+        // Создать в оперативной памяти контекст, совместимый с экранным контекстом, который мы используем, чтобы рисовать
+        HDC srcHdc = CreateCompatibleDC(hdc);
 
+        // Связать картинку с новым контекстом
+        SelectObject(srcHdc, hBitMap);
 
-            // Получить дескриптор на новое растровое изображение
-            HBITMAP hBitMap = CreateBitmap(width, height, 1, sizeof(RGBPIXEL) * 8, bitmap);
+        // Копировать содержимое из временного контекста srcHdc в основной контекст окна hdc
+        BitBlt(
+            hdc,        // Основной контекст
+            0, 0,       // Координаты левого верхнего угла, от которого будет выполняться вставка
+            width,      // Ширина вставляемого изображения
+            height,     // Высота вставляемого изображения
+            srcHdc,     // Дескриптор временного контекста
+            0, 0,       // Координаты считываемого изображения
+            SRCCOPY);   // Параметры операции - копирование 
 
-            // Освободить память, которую занимает буфер цвета
-            HeapFree(GetProcessHeap(), 0, bitmap);
+        EndPaint(hWnd, &ps);
 
-            // Создать в оперативной памяти контекст, совместимый с экранным контекстом, который мы используем, чтобы рисовать
-            HDC srcHdc = CreateCompatibleDC(hdc);
+        // Удаление картинки из памяти
+        DeleteObject(hBitMap);
 
-            // Связать картинку с новым контекстом
-            SelectObject(srcHdc, hBitMap);
+        // Удаление временного контекста
+        DeleteDC(srcHdc);
+    }
+    break;
 
-            // Копировать содержимое из временного контекста srcHdc в основной контекст окна hdc
-            BitBlt(
-                hdc,        // Основной контекст
-                0, 0,       // Координаты левого верхнего угла, от которого будет выполняться вставка
-                width,      // Ширина вставляемого изображения
-                height,     // Высота вставляемого изображения
-                srcHdc,     // Дескриптор временного контекста
-                0, 0,       // Координаты считываемого изображения
-                SRCCOPY);   // Параметры операции - копирование 
+    case WM_MOUSEMOVE:
+    {
+        char str[256];
 
-            SetBkMode(hdc, TRANSPARENT);
-            DrawTextA(hdc, repaint_time, -1, &rect, 0);
+        // Устанавливаем текст в разных частях StatusBar'а
+        // Экранные координаты курсора мыши
+        sprintf_s(str, "X = %d, Y = %d", LOWORD(lParam), HIWORD(lParam));
+        SendMessageA(hWndStatusBar, SB_SETTEXTA, 2, (LPARAM)str);
 
+        // Координаты пикселя в буфере кадра
+        sprintf_s(str, "BX = %d, BY = %d", LOWORD(lParam) / pixelSize, HIWORD(lParam) / pixelSize);
+        SendMessageA(hWndStatusBar, SB_SETTEXTA, 1, (LPARAM)str);
 
-            EndPaint(hWnd, &ps);
+        sprintf_s(str, "Масштаб (F2/F3): %d", pixelSize);
+        SendMessageA(hWndStatusBar, SB_SETTEXTA, 0, (LPARAM)str);
+    }
+    break;
 
-            // Удаление картинки из памяти
-            DeleteObject(hBitMap);
-
-            // Удаление временного контекста
-            DeleteDC(srcHdc);
-        }
+    case WM_LBUTTONDOWN:
+        // Запоминаем координаты пикселя, по которому щёлкнул пользователь
+        global_clicked_pixel.X = LOWORD(lParam) / pixelSize;
+        global_clicked_pixel.Y = HIWORD(lParam) / pixelSize;
+        // Перерисовать окно
+        InvalidateRect(hWnd, NULL, false);
         break;
 
-        case WM_MOUSEMOVE:
+    case WM_KEYDOWN:
+        if (wParam == VK_F2 || wParam == VK_F3)
         {
+            if (pixelSize > 1 && wParam == VK_F2) pixelSize--;
+            if (pixelSize < 64 && wParam == VK_F3) pixelSize++;
+
+            // Перерисовать окно
+            InvalidateRect(hWnd, NULL, false);
+
             char str[256];
-
-            // Устанавливаем текст в разных частях StatusBar'а
-            // Экранные координаты курсора мыши
-            sprintf_s(str, "X = %d, Y = %d", LOWORD(lParam), HIWORD(lParam));
-            SendMessageA(hWndStatusBar, SB_SETTEXTA, 2, (LPARAM)str);
-
-            // Координаты пикселя в буфере кадра
-            sprintf_s(str, "BX = %d, BY = %d", LOWORD(lParam) / pixelSize, HIWORD(lParam) / pixelSize);
-            SendMessageA(hWndStatusBar, SB_SETTEXTA, 1, (LPARAM)str);
-
             sprintf_s(str, "Масштаб (F2/F3): %d", pixelSize);
             SendMessageA(hWndStatusBar, SB_SETTEXTA, 0, (LPARAM)str);
         }
+        if (wParam == VK_F1)
+        {
+            MessageBoxA(hWnd, "Работу выполнил студент группы ПВ-223 Пахомов В.А.", "О программе", MB_ICONINFORMATION);
+        }
         break;
 
-        case WM_KEYDOWN:
-            if (wParam == VK_F2 || wParam == VK_F3)
-            {
-                if (pixelSize > 1  && wParam == VK_F2) pixelSize--;
-                if (pixelSize < 64 && wParam == VK_F3) pixelSize++;
-
-                // Перерисовать окно
-                InvalidateRect(hWnd, NULL, false);
-
-                char str[256];
-                sprintf_s(str, "Масштаб (F2/F3): %d", pixelSize);
-                SendMessageA(hWndStatusBar, SB_SETTEXTA, 0, (LPARAM)str);
-            }
-			if (wParam == VK_F1)
-            {
-                MessageBoxA(hWnd, "Работу выполнил студент группы ПВ-221 Колесников А.И.", "О программе", MB_ICONINFORMATION);
-            }
-            break;
-
         // Обработка сообщения на изменение размера окна
-        case WM_SIZE:
+    case WM_SIZE:
 
-            // Подгоняем размеры StatusBar под размер окна
-            SendMessageA(hWndStatusBar, WM_SIZE, 0, 0);
+        // Подгоняем размеры StatusBar под размер окна
+        SendMessageA(hWndStatusBar, WM_SIZE, 0, 0);
 
-            // Перерисовать окно
-            InvalidateRect(hWnd, NULL, false);
-            break;
+        // Перерисовать окно
+        InvalidateRect(hWnd, NULL, false);
+        break;
 
-        case WM_TIMER:
-            // При срабатывании таймера увеличим угол поворота
-            global_angle += 0.05;
-            // Перерисовать окно
-            InvalidateRect(hWnd, NULL, false);
-            break;
+    case WM_TIMER:
 
-        case WM_DESTROY: // Завершение программы
-            PostQuitMessage(0);
-            break;
+        // При срабатывании таймера увеличим угол поворота
+        global_angle += 0.05;
+        // Перерисовать окно
+        InvalidateRect(hWnd, NULL, false);
+        break;
 
-        default:
-            // Все сообщения, не обрабатываемые в данной функции, направляются на обработку по умолчанию
-            return DefWindowProcA(hWnd, message, wParam, lParam);
-}
+    case WM_DESTROY: // Завершение программы
+        PostQuitMessage(0);
+        break;
+
+    default:
+        // Все сообщения, не обрабатываемые в данной функции, направляются на обработку по умолчанию
+        return DefWindowProcA(hWnd, message, wParam, lParam);
+    }
 
     return 0;
 }

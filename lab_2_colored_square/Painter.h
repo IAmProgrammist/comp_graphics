@@ -55,35 +55,10 @@ public:
 
 		// Код для отрисовки основного задания.
 		if (MAIN_TASK) {
-			float x0 = 0, y0 = 0, x1 = frame.width, y1 = frame.height;
-			RadialInterpolator radialInterpolator(x0, y0, x1, y1, COLOR(255, 0, 0), COLOR(100, 20, 0), global_angle);
-			RadialInterpolator radialInterpolator2(x0, y0, x1, y1, COLOR(255, 255, 0), COLOR(20, 255, 255), global_angle);
-			// Рисуем описанную окружность
-			frame.Circle((int)C.x, (int)C.y, (int)a, radialInterpolator);
-
-			//Рисуем треугольник
 			double t = (3 * a) / sqrt(3);
 			coordinate triangleA = { C.x, C.y - a };
 			coordinate triangleB = { C.x - t / 2, C.y + a / 2 };
 			coordinate triangleC = { C.x + t / 2, C.y + a / 2 };
-			BarycentricInterpolator triangle(
-				triangleA.x + 0.5, triangleA.y + 0.5, 
-				triangleB.x + 0.5, triangleB.y + 0.5, 
-				triangleC.x + 0.5, triangleC.y + 0.5, COLOR(255, 255, 0), COLOR(20, 255, 142), COLOR(31, 173, 142, 31));
-			BarycentricInterpolator triangleMetallic(
-				triangleA.x + 0.5, triangleA.y + 0.5,
-				triangleB.x + 0.5, triangleB.y + 0.5,
-				triangleC.x + 0.5, triangleC.y + 0.5, COLOR(255, 255, 255), COLOR(51, 51, 51), COLOR(128, 128, 128));
-			frame.Triangle(
-				triangleA.x + 0.5, triangleA.y + 0.5,
-				triangleB.x + 0.5, triangleB.y + 0.5,
-				triangleC.x + 0.5, triangleC.y + 0.5,
-				triangle);
-
-			// Рисуем вписанную окружность
-			frame.Circle((int)C.x, (int)C.y, (int)(a * 0.5), radialInterpolator2);
-
-			
 
 			Matrix S = { 1, 0, 0,
 							0, 1, 0,
@@ -114,13 +89,91 @@ public:
 				star[i].y = pointVector.vector[1];
 			}
 
+			bool starSelected = frame.IsPointInTriangle(
+				star[7].x, star[7].y, star[0].x, star[0].y, star[1].x, star[1].y,
+				global_clicked_pixel.X, global_clicked_pixel.Y) ||
+				frame.IsPointInTriangle(
+					star[1].x, star[1].y, star[2].x, star[2].y, star[3].x, star[3].y,
+					global_clicked_pixel.X, global_clicked_pixel.Y) ||
+				frame.IsPointInTriangle(
+					star[5].x, star[5].y, star[4].x, star[4].y, star[3].x, star[3].y,
+					global_clicked_pixel.X, global_clicked_pixel.Y) ||
+				frame.IsPointInTriangle(
+					star[5].x, star[5].y, star[6].x, star[6].y, star[7].x, star[7].y,
+					global_clicked_pixel.X, global_clicked_pixel.Y) ||
+				frame.IsPointInTriangle(
+					star[7].x, star[7].y, star[1].x, star[1].y, star[3].x, star[3].y,
+					global_clicked_pixel.X, global_clicked_pixel.Y) ||
+				frame.IsPointInTriangle(
+					star[7].x, star[7].y, star[5].x, star[5].y, star[3].x, star[3].y,
+					global_clicked_pixel.X, global_clicked_pixel.Y);
+
+			bool smallCircleSelected = !starSelected &&
+				frame.IsPointInCircle((int)C.x, (int)C.y, (int)(a * 0.5),
+					global_clicked_pixel.X, global_clicked_pixel.Y);
+
+			bool triangleSelected = !smallCircleSelected && !starSelected && frame.IsPointInTriangle(
+				triangleA.x, triangleA.y,
+				triangleB.x, triangleB.y,
+				triangleC.x, triangleC.y,
+				global_clicked_pixel.X, global_clicked_pixel.Y);
+
+			bool bigCircleSelected = !triangleSelected && !smallCircleSelected && !starSelected &&
+				frame.IsPointInCircle((int)C.x, (int)C.y, (int)a,
+					global_clicked_pixel.X, global_clicked_pixel.Y);
+
+			float x0 = 0, y0 = 0, x1 = frame.width, y1 = frame.height;
+			RadialInterpolator selected(x0, y0, x1, y1, COLOR(255, 0, 0), COLOR(255, 0, 0), 0);
+			RadialInterpolator radialInterpolator(x0, y0, x1, y1, COLOR(255, 0, 0), COLOR(100, 20, 0), global_angle);
+			RadialInterpolator radialInterpolator2(x0, y0, x1, y1, COLOR(255, 255, 0), COLOR(20, 255, 255), global_angle);
+			// Рисуем описанную окружность
+			frame.Circle((int)C.x, (int)C.y, (int)a, bigCircleSelected ? selected : radialInterpolator);
+
+			//Рисуем треугольник
+
+			BarycentricInterpolator triangle(
+				triangleA.x + 0.5, triangleA.y + 0.5,
+				triangleB.x + 0.5, triangleB.y + 0.5,
+				triangleC.x + 0.5, triangleC.y + 0.5, COLOR(255, 255, 0), COLOR(20, 255, 142), COLOR(31, 173, 142, 31));
+			BarycentricInterpolator triangleMetallic(
+				triangleA.x + 0.5, triangleA.y + 0.5,
+				triangleB.x + 0.5, triangleB.y + 0.5,
+				triangleC.x + 0.5, triangleC.y + 0.5, COLOR(255, 255, 255), COLOR(51, 51, 51), COLOR(128, 128, 128));
+			if (triangleSelected) {
+				frame.Triangle(
+					triangleA.x + 0.5, triangleA.y + 0.5,
+					triangleB.x + 0.5, triangleB.y + 0.5,
+					triangleC.x + 0.5, triangleC.y + 0.5,
+					selected);
+			}
+			else {
+				frame.Triangle(
+					triangleA.x + 0.5, triangleA.y + 0.5,
+					triangleB.x + 0.5, triangleB.y + 0.5,
+					triangleC.x + 0.5, triangleC.y + 0.5,
+					triangle);
+			}
+
+			// Рисуем вписанную окружность
+			frame.Circle((int)C.x, (int)C.y, (int)(a * 0.5), smallCircleSelected ? selected : radialInterpolator2);
+
 			// Добавим заливку для звезды в центре
-			frame.Triangle(star[7].x, star[7].y, star[0].x, star[0].y, star[1].x, star[1].y, triangleMetallic);
-			frame.Triangle(star[1].x, star[1].y, star[2].x, star[2].y, star[3].x, star[3].y, triangleMetallic);
-			frame.Triangle(star[5].x, star[5].y, star[4].x, star[4].y, star[3].x, star[3].y, triangleMetallic);
-			frame.Triangle(star[5].x, star[5].y, star[6].x, star[6].y, star[7].x, star[7].y, triangleMetallic);
-			frame.Triangle(star[7].x, star[7].y, star[1].x, star[1].y, star[3].x, star[3].y, triangleMetallic);
-			frame.Triangle(star[7].x, star[7].y, star[5].x, star[5].y, star[3].x, star[3].y, triangleMetallic);
+			if (starSelected) {
+				frame.Triangle(star[7].x, star[7].y, star[0].x, star[0].y, star[1].x, star[1].y, selected);
+				frame.Triangle(star[1].x, star[1].y, star[2].x, star[2].y, star[3].x, star[3].y, selected);
+				frame.Triangle(star[5].x, star[5].y, star[4].x, star[4].y, star[3].x, star[3].y, selected);
+				frame.Triangle(star[5].x, star[5].y, star[6].x, star[6].y, star[7].x, star[7].y, selected);
+				frame.Triangle(star[7].x, star[7].y, star[1].x, star[1].y, star[3].x, star[3].y, selected);
+				frame.Triangle(star[7].x, star[7].y, star[5].x, star[5].y, star[3].x, star[3].y, selected);
+			}
+			else {
+				frame.Triangle(star[7].x, star[7].y, star[0].x, star[0].y, star[1].x, star[1].y, triangleMetallic);
+				frame.Triangle(star[1].x, star[1].y, star[2].x, star[2].y, star[3].x, star[3].y, triangleMetallic);
+				frame.Triangle(star[5].x, star[5].y, star[4].x, star[4].y, star[3].x, star[3].y, triangleMetallic);
+				frame.Triangle(star[5].x, star[5].y, star[6].x, star[6].y, star[7].x, star[7].y, triangleMetallic);
+				frame.Triangle(star[7].x, star[7].y, star[1].x, star[1].y, star[3].x, star[3].y, triangleMetallic);
+				frame.Triangle(star[7].x, star[7].y, star[5].x, star[5].y, star[3].x, star[3].y, triangleMetallic);
+			}
 		}
 		else {
 			// Ожидаем после проверки
