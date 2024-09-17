@@ -4,11 +4,14 @@
 #include "Frame.h"
 #include "Matrices.h"
 
+// РЈСЃС‚Р°РЅРѕРІРёС‚Рµ 1 РґР»СЏ РѕС‚СЂРёСЃРѕРІРєРё РѕСЃРЅРѕРІРЅРѕРіРѕ РІР°СЂРёР°РЅС‚Р°, 0 - РґР»СЏ РѕС‚СЂРёСЃРѕРІРєРё Р·Р°РґР°РЅРёСЏ СЃ Р·Р°С‰РёС‚С‹ (СЃРµРєС‚РѕСЂ-РєСЂСѓРі)
+#define MAIN_TASK 0
 
-// Угол поворота фигуры
+
+// РЈРіРѕР» РїРѕРІРѕСЂРѕС‚Р° С„РёРіСѓСЂС‹
 float global_angle = 0;
 
-// Координаты последнего пикселя, который выбрал пользователь 
+// РљРѕРѕСЂРґРёРЅР°С‚С‹ РїРѕСЃР»РµРґРЅРµРіРѕ РїРёРєСЃРµР»СЏ, РєРѕС‚РѕСЂС‹Р№ РІС‹Р±СЂР°Р» РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ 
 struct
 {
 	int X, Y;
@@ -26,83 +29,95 @@ public:
 
 	void Draw(Frame& frame)
 	{
-		// Шахматная текстура
+		// РЁР°С…РјР°С‚РЅР°СЏ С‚РµРєСЃС‚СѓСЂР°
 		for (int y = 0; y < frame.height; y++)
 			for (int x = 0; x < frame.width; x++)
 			{
 				if ((x + y) % 2 == 0)
-					frame.SetPixel(x, y, { 230, 255, 230 });	// Золотистый цвет
+					frame.SetPixel(x, y, { 230, 255, 230 });	// Р—РѕР»РѕС‚РёСЃС‚С‹Р№ С†РІРµС‚
 				//frame.SetPixel(x, y, { 217, 168, 14 });	
 				else
-					frame.SetPixel(x, y, { 200, 200, 200 }); // Чёрный цвет
-				//frame.SetPixel(x, y, { 255, 255, 255 }); // Белый цвет
+					frame.SetPixel(x, y, { 200, 200, 200 }); // Р§С‘СЂРЅС‹Р№ С†РІРµС‚
+				//frame.SetPixel(x, y, { 255, 255, 255 }); // Р‘РµР»С‹Р№ С†РІРµС‚
 			}
 
 
 		int W = frame.width, H = frame.height;
-		// Размер рисунка возьмём меньше (7 / 8), чтобы он не касался границ экрана 
-		float a = 7.0f / 8 * ((W < H) ? W - 1 : H - 1) / sqrt(2);
-		if (a < 1) return; // Если окно очень маленькое, то ничего не рисуем
-		float angle = -global_angle; // Угол поворота
+		// Р Р°Р·РјРµСЂ СЂРёСЃСѓРЅРєР° РІРѕР·СЊРјС‘Рј РјРµРЅСЊС€Рµ (7 / 8), С‡С‚РѕР±С‹ РѕРЅ РЅРµ РєР°СЃР°Р»СЃСЏ РіСЂР°РЅРёС† СЌРєСЂР°РЅР° 
+		float a = 7.0f / 8 * ((W < H) ? W - 1 : H - 1);
+		if (a < 1) return; // Р•СЃР»Рё РѕРєРЅРѕ РѕС‡РµРЅСЊ РјР°Р»РµРЅСЊРєРѕРµ, С‚Рѕ РЅРёС‡РµРіРѕ РЅРµ СЂРёСЃСѓРµРј
+		float angle = -global_angle; // РЈРіРѕР» РїРѕРІРѕСЂРѕС‚Р°
 		a = a / 2;
 		coordinate C = { W / 2, H / 2 };
 
-		// Рисуем описанную окружность
-		frame.Circle((int)C.x, (int)C.y, (int)a, COLOR(0, 0, 0));
-		// Рисуем вписанную окружность
-		frame.Circle((int)C.x, (int)C.y, (int)(a * 0.5), COLOR(0, 0, 0));
-		//Рисуем треугольник
-		double t = (3 * a) / sqrt(3);
-		coordinate triangleA = { C.x, C.y - a };
-		coordinate triangleB = { C.x - t / 2, C.y + a / 2 };
-		coordinate triangleC = { C.x + t / 2, C.y + a / 2 };
-		frame.DrawLine(triangleA.x, triangleA.y, triangleB.x, triangleB.y, { 56, 93, 138 });
-		frame.DrawLine(triangleC.x, triangleC.y, triangleB.x, triangleB.y, { 56, 93, 138 });
-		frame.DrawLine(triangleA.x, triangleA.y, triangleC.x, triangleC.y, { 56, 93, 138 });
 
-		Matrix S = { 1, 0, 0,
-					 0, 1, 0,
-					 0, 0, 1 };
-		Matrix R = { cos(angle), -sin(angle),  0,
-					 sin(angle),  cos(angle),  0,
-							  0,           0,  1 };
-		Matrix T = { 1, 0, W / 2.0,
-					 0, 1, H / 2.0,
-					 0, 0,       1 };
-		Matrix SRT = (T.multiply(R)).multiply(S);
-		double starOffset = a / 12;
-		coordinate star[8] = { 
-			{ 0, a / 2 }, 
-			{ starOffset, starOffset }, 
-			{ a / 2, 0 }, 
-			{ starOffset, -starOffset }, 
-			{ 0, -a / 2 }, 
-			{ -starOffset, -starOffset }, 
-			{ -a / 2, 0 }, 
-			{ -starOffset, starOffset } };
+		// РљРѕРґ РґР»СЏ РѕС‚СЂРёСЃРѕРІРєРё РѕСЃРЅРѕРІРЅРѕРіРѕ Р·Р°РґР°РЅРёСЏ.
+		if (MAIN_TASK) {
+			// Р РёСЃСѓРµРј РѕРїРёСЃР°РЅРЅСѓСЋ РѕРєСЂСѓР¶РЅРѕСЃС‚СЊ
+			frame.Circle((int)C.x, (int)C.y, (int)a, COLOR(0, 0, 0));
+			// Р РёСЃСѓРµРј РІРїРёСЃР°РЅРЅСѓСЋ РѕРєСЂСѓР¶РЅРѕСЃС‚СЊ
+			frame.Circle((int)C.x, (int)C.y, (int)(a * 0.5), COLOR(0, 0, 0));
+			//Р РёСЃСѓРµРј С‚СЂРµСѓРіРѕР»СЊРЅРёРє
+			double t = (3 * a) / sqrt(3);
+			coordinate triangleA = { C.x, C.y - a };
+			coordinate triangleB = { C.x - t / 2, C.y + a / 2 };
+			coordinate triangleC = { C.x + t / 2, C.y + a / 2 };
+			frame.DrawLine(triangleA.x + 0.5, triangleA.y + 0.5, triangleB.x + 0.5, triangleB.y + 0.5, { 56, 93, 138 });
+			frame.DrawLine(triangleC.x + 0.5, triangleC.y + 0.5, triangleB.x + 0.5, triangleB.y + 0.5, { 56, 93, 138 });
+			frame.DrawLine(triangleA.x + 0.5, triangleA.y + 0.5, triangleC.x + 0.5, triangleC.y + 0.5, { 56, 93, 138 });
 
-		for (int i = 0; i < 8; i++)
-		{
-			Vector pointVector = { star[i].x, star[i].y, 1 };
-			pointVector = SRT.multiply(pointVector);
-			star[i].x = pointVector.vector[0];
-			star[i].y = pointVector.vector[1];
+			Matrix S = { 1, 0, 0,
+							0, 1, 0,
+							0, 0, 1 };
+			Matrix R = { cos(angle), -sin(angle),  0,
+							sin(angle),  cos(angle),  0,
+									0,           0,  1 };
+			Matrix T = { 1, 0, W / 2.0,
+							0, 1, H / 2.0,
+							0, 0,       1 };
+			Matrix SRT = (T.multiply(R)).multiply(S);
+			double starOffset = a / 12;
+			coordinate star[8] = {
+				{ 0, a / 2 },
+				{ starOffset, starOffset },
+				{ a / 2, 0 },
+				{ starOffset, -starOffset },
+				{ 0, -a / 2 },
+				{ -starOffset, -starOffset },
+				{ -a / 2, 0 },
+				{ -starOffset, starOffset } };
+
+			for (int i = 0; i < 8; i++)
+			{
+				Vector pointVector = { star[i].x, star[i].y, 1 };
+				pointVector = SRT.multiply(pointVector);
+				star[i].x = pointVector.vector[0];
+				star[i].y = pointVector.vector[1];
+			}
+
+			for (int i = 0; i < 8; i++)
+			{
+				int i2 = (i + 1) % 8;
+				frame.DrawLine( // Р”РѕР±Р°РІР»СЏРµРј РІРµР·РґРµ 0.5f, С‡С‚РѕР±С‹ РІРµС‰РµСЃС‚РІРµРЅРЅС‹Рµ С‡РёСЃР»Р° РїСЂР°РІРёР»СЊРЅРѕ РѕРєСЂСѓРіР»СЏР»РёСЃСЊ РїСЂРё РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРё Рє С†РµР»РѕРјСѓ С‚РёРїСѓ
+					int(star[i].x + 0.5f),
+					int(star[i].y + 0.5f),
+					int(star[i2].x + 0.5f),
+					int(star[i2].y + 0.5f), COLOR(0, 176, 80));
+			}
 		}
-
-		for (int i = 0; i < 8; i++)
-		{
-			int i2 = (i + 1) % 8;
-			frame.DrawLine( // Добавляем везде 0.5f, чтобы вещественные числа правильно округлялись при преобразовании к целому типу
-				int(star[i].x + 0.5f),
-				int(star[i].y + 0.5f),
-				int(star[i2].x + 0.5f),
-				int(star[i2].y + 0.5f), COLOR(0, 176, 80));
+		else {
+			// РљРѕРґ РґР»СЏ РѕС‚СЂРёСЃРѕРІРєРё СЃРµРєС‚РѕСЂ-РєСЂСѓРіР°: Р·Р°РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°С‚СЊ РІСЂСѓС‡РЅСѓСЋ.
+			double startAngle = -2;
+			double endAngle = startAngle + global_angle;
+			if (endAngle > 3.14) endAngle = 3.14;
+			frame.SectorCircle(startAngle, endAngle, (int)C.x, (int)C.y, (int)(a * 0.5), COLOR(0, 0, 0));
+			frame.DrawLine(C.x, C.y, C.x + (int)(-a * 0.5 * sin(startAngle)), C.y + (int)(a * 0.5 * cos(startAngle)), COLOR(0, 0, 0));
+			frame.DrawLine(C.x, C.y, C.x + (int)(-a * 0.5 * sin(endAngle)), C.y + (int)(a * 0.5 * cos(endAngle)), COLOR(0, 0, 0));
 		}
-
-		// Рисуем пиксель, на который кликнул пользователь
+		// Р РёСЃСѓРµРј РїРёРєСЃРµР»СЊ, РЅР° РєРѕС‚РѕСЂС‹Р№ РєР»РёРєРЅСѓР» РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ
 		if (global_clicked_pixel.X >= 0 && global_clicked_pixel.X < W &&
 			global_clicked_pixel.Y >= 0 && global_clicked_pixel.Y < H)
-			frame.SetPixel(global_clicked_pixel.X, global_clicked_pixel.Y, { 34, 175, 60 }); // Пиксель зелёного цвета
+			frame.SetPixel(global_clicked_pixel.X, global_clicked_pixel.Y, { 34, 175, 60 }); // РџРёРєСЃРµР»СЊ Р·РµР»С‘РЅРѕРіРѕ С†РІРµС‚Р°
 	}
 };
 
