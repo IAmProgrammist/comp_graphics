@@ -2,8 +2,28 @@
 #define PAINTER_H
 
 #include "Frame.h"
+#include "Matrices.h"
+#include "RadialInterpolator.h"
+#include "BarycentricInterpolator.h"
 
+// –£—Å—Ç–∞–Ω–æ–≤–∏—Ç–µ 1 –¥–ª—è –æ—Ç—Ä–∏—Å–æ–≤–∫–∏ –æ—Å–Ω–æ–≤–Ω–æ–≥–æ –≤–∞—Ä–∏–∞–Ω—Ç–∞, 0 - –¥–ª—è –æ—Ç—Ä–∏—Å–æ–≤–∫–∏ –∑–∞–¥–∞–Ω–∏—è —Å –∑–∞—â–∏—Ç—ã (—Å–µ–∫—Ç–æ—Ä-–∫—Ä—É–≥)
+#define MAIN_TASK 1
+
+
+// –£–≥–æ–ª –ø–æ–≤–æ—Ä–æ—Ç–∞ —Ñ–∏–≥—É—Ä—ã
 float global_angle = 0;
+
+// –ö–æ–æ—Ä–¥–∏–Ω–∞—Ç—ã –ø–æ—Å–ª–µ–¥–Ω–µ–≥–æ –ø–∏–∫—Å–µ–ª—è, –∫–æ—Ç–æ—Ä—ã–π –≤—ã–±—Ä–∞–ª –ø–æ–ª—å–∑–æ–≤–∞—Ç–µ–ª—å 
+struct
+{
+	int X, Y;
+} global_clicked_pixel = { -1, -1 };
+
+typedef struct
+{
+	float x;
+	float y;
+} coordinate;
 
 class Painter
 {
@@ -11,108 +31,104 @@ public:
 
 	void Draw(Frame& frame)
 	{
-	
+		// –®–∞—Ö–º–∞—Ç–Ω–∞—è —Ç–µ–∫—Å—Ç—É—Ä–∞
+		for (int y = 0; y < frame.height; y++)
+			for (int x = 0; x < frame.width; x++)
+			{
+				if ((x + y) % 2 == 0)
+					frame.SetPixel(x, y, { 230, 255, 230 });	// –ó–æ–ª–æ—Ç–∏—Å—Ç—ã–π —Ü–≤–µ—Ç
+				//frame.SetPixel(x, y, { 217, 168, 14 });	
+				else
+					frame.SetPixel(x, y, { 200, 200, 200 }); // –ß—ë—Ä–Ω—ã–π —Ü–≤–µ—Ç
+				//frame.SetPixel(x, y, { 255, 255, 255 }); // –ë–µ–ª—ã–π —Ü–≤–µ—Ç
+			}
+
+
 		int W = frame.width, H = frame.height;
-
-		// –‡ÁÏÂ ËÒÛÌÍ‡ ‚ÓÁ¸Ï∏Ï ÏÂÌ¸¯Â (7 / 8), ˜ÚÓ·˚ ÓÌ ÌÂ Í‡Ò‡ÎÒˇ „‡ÌËˆ ˝Í‡Ì‡ 
-		float a = 7.0 / 8.0 * ((W < H) ? W - 1 : H - 1) / sqrt(2);
-
-		float angle = global_angle; // ”„ÓÎ ÔÓ‚ÓÓÚ‡
+		// –†–∞–∑–º–µ—Ä —Ä–∏—Å—É–Ω–∫–∞ –≤–æ–∑—å–º—ë–º –º–µ–Ω—å—à–µ (7 / 8), —á—Ç–æ–±—ã –æ–Ω –Ω–µ –∫–∞—Å–∞–ª—Å—è –≥—Ä–∞–Ω–∏—Ü —ç–∫—Ä–∞–Ω–∞ 
+		float a = 7.0f / 8 * ((W < H) ? W - 1 : H - 1);
+		if (a < 1) return; // –ï—Å–ª–∏ –æ–∫–Ω–æ –æ—á–µ–Ω—å –º–∞–ª–µ–Ω—å–∫–æ–µ, —Ç–æ –Ω–∏—á–µ–≥–æ –Ω–µ —Ä–∏—Å—É–µ–º
+		float angle = -global_angle; // –£–≥–æ–ª –ø–æ–≤–æ—Ä–æ—Ç–∞
 		a = a / 2;
-		
-		// »ÌËˆË‡ÎËÁËÛÂÏ ËÒıÓ‰Ì˚Â ÍÓÓ‰ËÌ‡Ú˚ ˆÂÌÚ‡ Ë ‚Â¯ËÌ Í‚‡‰‡Ú‡
-		struct
-		{
-			float x;
-			float y;
-		} C = {W / 2 + 0.5f, H / 2 + 0.5f}, A[4] = { { C.x + a, C.y + a}, {C.x + a, C.y - a}, {C.x - a, C.y - a}, {C.x - a, C.y + a} };
-	
+		coordinate C = { W / 2, H / 2 };
 
-		// œÓ‚Ó‡˜Ë‚‡ÂÏ ‚ÒÂ ‚Â¯ËÌ˚ Í‚‡‰‡Ú‡ ‚ÓÍÛ„ ÚÓ˜ÍË C Ì‡ Û„ÓÎ angle
-		for (int i = 0; i < 4; i++)
-		{
-			double xi = A[i].x, yi = A[i].y;
-			A[i].x = (xi - C.x) * cos(angle) - (yi - C.y) * sin(angle) + C.x;
-			A[i].y = (xi - C.x) * sin(angle) + (yi - C.y) * cos(angle) + C.y;
+
+		// –ö–æ–¥ –¥–ª—è –æ—Ç—Ä–∏—Å–æ–≤–∫–∏ –æ—Å–Ω–æ–≤–Ω–æ–≥–æ –∑–∞–¥–∞–Ω–∏—è.
+		if (MAIN_TASK) {
+			float x0 = 0, y0 = 0, x1 = frame.width, y1 = frame.height;
+			RadialInterpolator radialInterpolator(x0, y0, x1, y1, COLOR(255, 0, 0), COLOR(100, 20, 0), global_angle);
+			RadialInterpolator radialInterpolator2(x0, y0, x1, y1, COLOR(255, 255, 0), COLOR(20, 255, 255), global_angle);
+			// –†–∏—Å—É–µ–º –æ–ø–∏—Å–∞–Ω–Ω—É—é –æ–∫—Ä—É–∂–Ω–æ—Å—Ç—å
+			frame.Circle((int)C.x, (int)C.y, (int)a, radialInterpolator);
+
+			//–†–∏—Å—É–µ–º —Ç—Ä–µ—É–≥–æ–ª—å–Ω–∏–∫
+			double t = (3 * a) / sqrt(3);
+			coordinate triangleA = { C.x, C.y - a };
+			coordinate triangleB = { C.x - t / 2, C.y + a / 2 };
+			coordinate triangleC = { C.x + t / 2, C.y + a / 2 };
+			BarycentricInterpolator triangle(
+				triangleA.x + 0.5, triangleA.y + 0.5, 
+				triangleB.x + 0.5, triangleB.y + 0.5, 
+				triangleC.x + 0.5, triangleC.y + 0.5, COLOR(255, 255, 0), COLOR(20, 255, 142), COLOR(31, 173, 142, 31));
+			BarycentricInterpolator triangleMetallic(
+				triangleA.x + 0.5, triangleA.y + 0.5,
+				triangleB.x + 0.5, triangleB.y + 0.5,
+				triangleC.x + 0.5, triangleC.y + 0.5, COLOR(255, 255, 255), COLOR(51, 51, 51), COLOR(128, 128, 128));
+			frame.Triangle(
+				triangleA.x + 0.5, triangleA.y + 0.5,
+				triangleB.x + 0.5, triangleB.y + 0.5,
+				triangleC.x + 0.5, triangleC.y + 0.5,
+				triangle);
+
+			// –†–∏—Å—É–µ–º –≤–ø–∏—Å–∞–Ω–Ω—É—é –æ–∫—Ä—É–∂–Ω–æ—Å—Ç—å
+			frame.Circle((int)C.x, (int)C.y, (int)(a * 0.5), radialInterpolator2);
+
+			
+
+			Matrix S = { 1, 0, 0,
+							0, 1, 0,
+							0, 0, 1 };
+			Matrix R = { cos(angle), -sin(angle),  0,
+							sin(angle),  cos(angle),  0,
+									0,           0,  1 };
+			Matrix T = { 1, 0, W / 2.0,
+							0, 1, H / 2.0,
+							0, 0,       1 };
+			Matrix SRT = (T.multiply(R)).multiply(S);
+			double starOffset = a / 12;
+			coordinate star[8] = {
+				{ 0, a / 2 },
+				{ starOffset, starOffset },
+				{ a / 2, 0 },
+				{ starOffset, -starOffset },
+				{ 0, -a / 2 },
+				{ -starOffset, -starOffset },
+				{ -a / 2, 0 },
+				{ -starOffset, starOffset } };
+
+			for (int i = 0; i < 8; i++)
+			{
+				Vector pointVector = { star[i].x, star[i].y, 1 };
+				pointVector = SRT.multiply(pointVector);
+				star[i].x = pointVector.vector[0];
+				star[i].y = pointVector.vector[1];
+			}
+
+			// –î–æ–±–∞–≤–∏–º –∑–∞–ª–∏–≤–∫—É –¥–ª—è –∑–≤–µ–∑–¥—ã –≤ —Ü–µ–Ω—Ç—Ä–µ
+			frame.Triangle(star[7].x, star[7].y, star[0].x, star[0].y, star[1].x, star[1].y, triangleMetallic);
+			frame.Triangle(star[1].x, star[1].y, star[2].x, star[2].y, star[3].x, star[3].y, triangleMetallic);
+			frame.Triangle(star[5].x, star[5].y, star[4].x, star[4].y, star[3].x, star[3].y, triangleMetallic);
+			frame.Triangle(star[5].x, star[5].y, star[6].x, star[6].y, star[7].x, star[7].y, triangleMetallic);
+			frame.Triangle(star[7].x, star[7].y, star[1].x, star[1].y, star[3].x, star[3].y, triangleMetallic);
+			frame.Triangle(star[7].x, star[7].y, star[5].x, star[5].y, star[3].x, star[3].y, triangleMetallic);
 		}
-
-	
-		//  Î‡ÒÒ ‰Îˇ ‡Ò˜∏Ú‡ ·‡ËˆÂÌÚË˜ÂÒÍÓÈ ËÌÚÂÔÓÎˇˆËË
-		class BarycentricInterpolator
-		{
-			float x0, y0, x1, y1, x2, y2, S;
-			COLOR C0, C1, C2;
-
-			public:
-			BarycentricInterpolator(float _x0, float _y0, float _x1, float _y1, float _x2, float _y2, COLOR A0, COLOR A1, COLOR A2) :
-				x0(_x0), y0(_y0), x1(_x1), y1(_y1), x2(_x2), y2(_y2), 
-				S((_y1 - _y2)*(_x0 - _x2) + (_x2 - _x1)*(_y0 - _y2)), C0(A0), C1(A1), C2(A2)
-			{
-			}
-
-
-			COLOR color(float x, float y)
-			{
-				// ¡‡ËˆÂÌÚË˜ÂÒÍ‡ˇ ËÌÚÂÔÓÎˇˆËˇ
-				float h0 = ((y1 - y2) * (x - x2) + (x2 - x1) * (y - y2)) / S;
-				float h1 = ((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / S;
-				float h2 = 1 - h0 - h1;
-				float r = h0 * C0.RED   + h1 * C1.RED   + h2 * C2.RED;
-				float g = h0 * C0.GREEN + h1 * C1.GREEN + h2 * C2.GREEN;
-				float b = h0 * C0.BLUE  + h1 * C1.BLUE  + h2 * C2.BLUE;
-				float a = h0 * C0.ALPHA + h1 * C1.ALPHA + h2 * C2.ALPHA;
-				// »Á-Á‡ ÔÓ„Â¯ÌÓÒÚË ‡ÔÔÓÍÒËÏ‡ˆËË ÚÂÛ„ÓÎ¸ÌËÍ‡ Û˜ËÚ˚‚‡ÂÏ, ˜ÚÓ ˆÂÌÚ Á‡Í‡¯Ë‚‡ÂÏÓ„Ó ÔËÍÒÂÎˇ ÏÓÊÂÚ Ì‡ıÓ‰ËÚÒˇ ‚ÌÂ ÚÂÛ„ÓÎ¸ÌËÍ‡.
-				// œÓ ˝ÚÓÈ ÔË˜ËÌÂ ÁÌ‡˜ÂÌËˇ r, g, b ÏÓ„ÛÚ ‚˚ÈÚË Á‡ ÔÂ‰ÂÎ˚ ‰Ë‡Ô‡ÁÓÌ‡ [0, 255].
-				return COLOR(r, g, b, a);
-			}
-		};
-
-	
-		//  Î‡ÒÒ ‰Îˇ ‡Ò˜∏Ú‡ ‡‰Ë‡Î¸ÌÓÈ ËÌÚÂÔÓÎˇˆËË
-		class RadialInterpolator
-		{
-			float cx, cy; // ÷ÂÌÚ ÔˇÏÓÛ„ÓÎ¸ÌËÍ‡
-			COLOR C0, C1; // ÷‚ÂÚ‡ ‡‰Ë‡Î¸ÌÓÈ Á‡ÎË‚ÍË
-			float angle;  // Õ‡˜‡Î¸Ì˚È Û„ÓÎ Á‡ÎË‚ÍË
-
-		public:
-			RadialInterpolator(float _x0, float _y0, float _x1, float _y1, COLOR A0, COLOR A1, float _angle) :
-				cx((_x0 + _x1) / 2.0f), cy((_y0 + _y1)/ 2.0f),
-				C0(A0), C1(A1), angle(_angle)
-			{
-			}
-
-
-			COLOR color(float x, float y)
-			{
-				double dx = (double)x - cx, dy = (double)y - cy;
-				double radius = sqrt(dx*dx + dy*dy);
-
-				float h0 = (sin(radius / 10 + angle) + 1.0f) / 2;
-				float h1 = 1 - h0;
-
-				float r = h0 * C0.RED + h1 * C1.RED;
-				float g = h0 * C0.GREEN + h1 * C1.GREEN;
-				float b = h0 * C0.BLUE + h1 * C1.BLUE;
-
-				return COLOR(r, g, b);
-
-			}
-		};
-
-		// –ËÒÓ‚‡ÌËÂ ÔˇÏÓÛ„ÓÎ¸ÌËÍ‡ Ò ‡‰Ë‡Î¸ÌÓÈ Á‡ÎË‚ÍÓÈ
-		float x0 = 0, y0 = 0, x1 = frame.width, y1 = frame.height;
-		RadialInterpolator radialInterpolator(x0, y0, x1, y1, COLOR(255, 0, 0), COLOR(100, 20, 0), global_angle);
-		frame.Triangle(x0, y0, x0, y1, x1, y0, radialInterpolator);
-		frame.Triangle(x0, y1, x1, y0, x1, y1, radialInterpolator);
-
-		// –ËÒÓ‚‡ÌËÂ ÔÓÎÛÔÓÁ‡˜ÌÓ„Ó Í‚‡‰‡Ú‡
-		BarycentricInterpolator interpolator1(A[3].x, A[3].y, A[2].x, A[2].y, A[0].x, A[0].y, COLOR(0, 255, 0, 200), COLOR(255, 0, 0, 200), COLOR(0, 0, 255, 200));
-		frame.Triangle(A[3].x, A[3].y, A[2].x, A[2].y, A[0].x, A[0].y, interpolator1);
-
-		BarycentricInterpolator interpolator2(A[0].x, A[0].y, A[2].x, A[2].y, A[1].x, A[1].y, COLOR(0, 0, 255, 200), COLOR(255, 0, 0, 200), COLOR(0, 255, 0, 200));
-		frame.Triangle(A[0].x, A[0].y, A[2].x, A[2].y, A[1].x, A[1].y, interpolator2);
-		
+		else {
+			// –û–∂–∏–¥–∞–µ–º –ø–æ—Å–ª–µ –ø—Ä–æ–≤–µ—Ä–∫–∏
+		}
+		// –†–∏—Å—É–µ–º –ø–∏–∫—Å–µ–ª—å, –Ω–∞ –∫–æ—Ç–æ—Ä—ã–π –∫–ª–∏–∫–Ω—É–ª –ø–æ–ª—å–∑–æ–≤–∞—Ç–µ–ª—å
+		if (global_clicked_pixel.X >= 0 && global_clicked_pixel.X < W &&
+			global_clicked_pixel.Y >= 0 && global_clicked_pixel.Y < H)
+			frame.SetPixel(global_clicked_pixel.X, global_clicked_pixel.Y, { 34, 175, 60 }); // –ü–∏–∫—Å–µ–ª—å –∑–µ–ª—ë–Ω–æ–≥–æ —Ü–≤–µ—Ç–∞
 	}
 };
 

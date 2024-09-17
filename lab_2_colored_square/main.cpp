@@ -111,17 +111,24 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
             int ratio = pixelSize; // Размер "большого" пикселя
 
-            int W = width / ratio;
-            int H = (height - 22) / ratio; // Отнимем высоту StatusBar'а
-
-            Frame frame(W, H);
+            static int W = 0;
+            static int H = 0;
+            static Frame* frame = new Frame(W, H); // Отнимем высоту StatusBar'а
+            int newW = width / ratio;
+            int newH = (height - 22) / ratio;
+            if (newW != W || newH != H) {
+                W = newW;
+                H = newH;
+                delete frame;
+                frame = new Frame(W, H);
+            }
 
             Painter painter;
             
             // Вычислим время, которое нужно затратить для рисования одного кадра
             char repaint_time[50];
             DWORD t1 = GetTickCount();
-            painter.Draw(frame);
+            painter.Draw(*frame);
             sprintf_s(repaint_time, "Время перерисовки: %d миллисекунд", GetTickCount() - t1);
 
             // Системная структура для хранения цвета пикселя
@@ -145,7 +152,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
                 for (int x = 0; x < W * ratio; x++)
                 {
                     RGBPIXEL* pixel = bitmap + (size_t)y * width + x;
-                    COLOR color = frame.GetPixel(x / ratio, y / ratio);
+                    COLOR color = frame->GetPixel(x / ratio, y / ratio);
                     pixel->RED = color.RED;
                     pixel->GREEN = color.GREEN;
                     pixel->BLUE = color.BLUE;

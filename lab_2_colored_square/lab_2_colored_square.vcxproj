@@ -143,8 +143,11 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BarycentricInterpolator.h" />
     <ClInclude Include="Frame.h" />
+    <ClInclude Include="Matrices.h" />
     <ClInclude Include="Painter.h" />
+    <ClInclude Include="RadialInterpolator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
