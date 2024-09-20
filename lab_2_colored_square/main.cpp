@@ -187,19 +187,19 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
     case WM_MOUSEMOVE:
     {
-        char str[256];
+        char str[512];
 
         // Устанавливаем текст в разных частях StatusBar'а
         // Экранные координаты курсора мыши
         sprintf_s(str, "X = %d, Y = %d", LOWORD(lParam), HIWORD(lParam));
-        SendMessageA(hWndStatusBar, SB_SETTEXTA, 2, (LPARAM)str);
+        SendMessageA(hWndStatusBar, SB_SETTEXTA, 1, (LPARAM)str);
 
         // Координаты пикселя в буфере кадра
         sprintf_s(str, "BX = %d, BY = %d", LOWORD(lParam) / pixelSize, HIWORD(lParam) / pixelSize);
-        SendMessageA(hWndStatusBar, SB_SETTEXTA, 1, (LPARAM)str);
-
-        sprintf_s(str, "Масштаб (F2/F3): %d", pixelSize);
         SendMessageA(hWndStatusBar, SB_SETTEXTA, 0, (LPARAM)str);
+
+        sprintf_s(str, "Масштаб (F2/F3): %d. (F4/F5/F6/F7) для изменения заполнения фигур.", pixelSize);
+        SendMessageA(hWndStatusBar, SB_SETTEXTA, 2, (LPARAM)str);
     }
     break;
 
@@ -220,13 +220,25 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
             // Перерисовать окно
             InvalidateRect(hWnd, NULL, false);
 
-            char str[256];
-            sprintf_s(str, "Масштаб (F2/F3): %d", pixelSize);
-            SendMessageA(hWndStatusBar, SB_SETTEXTA, 0, (LPARAM)str);
+            char str[512];
+            sprintf_s(str, "Масштаб (F2/F3): %d. (F4/F5/F6/F7) для изменения заполнения фигур.", pixelSize);
+            SendMessageA(hWndStatusBar, SB_SETTEXTA, 2, (LPARAM)str);
         }
         if (wParam == VK_F1)
         {
             MessageBoxA(hWnd, "Работу выполнил студент группы ПВ-223 Пахомов В.А.", "О программе", MB_ICONINFORMATION);
+        }
+        if (wParam == VK_F4) {
+            bigCircleDrawMode = (DrawMode)((bigCircleDrawMode + 1) % 3);
+        }
+        if (wParam == VK_F5) {
+            triangleDrawMode = (DrawMode)((triangleDrawMode + 1) % 3);
+        }
+        if (wParam == VK_F6) {
+            smallCircleDrawMode = (DrawMode)((smallCircleDrawMode + 1) % 3);
+        }
+        if (wParam == VK_F7) {
+            starDrawMode = (DrawMode)((starDrawMode + 1) % 3);
         }
         break;
 
