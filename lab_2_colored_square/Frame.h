@@ -28,6 +28,52 @@ typedef struct tagCOLOR
 
 } COLOR;
 
+// Cтруктура для задания цвета
+typedef struct HSVCOLOR
+{
+	double H;		// Компонента красного цвета
+	double S;	// Компонента зелёного цвета
+	double V;		// Компонента синего цвета
+	unsigned char ALPHA;	// Прозрачность (альфа канал)
+
+	HSVCOLOR() : H(0), S(0), V(0), ALPHA(255) { }
+
+	HSVCOLOR(double hue, double saturation, double value, int alpha = 255)
+		: H(hue), S(saturation), V(value), ALPHA(alpha)
+	{
+		if (hue < 0) H = 0;
+		else if (hue > 360) H = 360;
+		if (saturation < 0) S = 0;
+		else if (saturation > 1) S = 1;
+		if (value < 0) value = 0;
+		else if (value > 1) V = 1;
+		if (alpha < 0) ALPHA = 0;
+		else if (alpha > 255) ALPHA = 255;
+	}
+
+	COLOR convertToRgb() {
+		int hi = int(floor(H / 60)) % 6;
+		double f = H / 60 - floor(H / 60);
+		int copyV = V * 255;
+		int v = (int)(copyV);
+		int p = (int)(copyV * (1 - S));
+		int q = (int)(copyV * (1 - f * S));
+		int t = (int)(copyV * (1 - (1 - f) * S));
+		if (hi == 0)
+			return { v, t, p, ALPHA };
+		if (hi == 1)
+			return { q, v, p, ALPHA };
+		else if (hi == 2)
+			return { p, v, t, ALPHA };
+		else if (hi == 3)
+			return { p, q, v, ALPHA };
+		else if (hi == 4)
+			return { t, p, v, ALPHA };
+		return { v, p, q, ALPHA };
+	}
+
+} HSVCOLOR;
+
 
 template<typename TYPE> void swap(TYPE& a, TYPE& b)
 {

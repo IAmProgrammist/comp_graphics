@@ -5,6 +5,7 @@
 #include "Matrices.h"
 #include "RadialInterpolator.h"
 #include "BarycentricInterpolator.h"
+#include "SectorInterpolator.h"
 
 // Установите 1 для отрисовки основного варианта, 0 - для отрисовки задания с защиты (сектор-круг)
 #define MAIN_TASK 1
@@ -18,6 +19,17 @@ struct
 {
 	int X, Y;
 } global_clicked_pixel = { -1, -1 };
+
+enum DrawMode {
+	SECTOR = 0,
+	RADIAL = 1,
+	BARYCENTRIC = 2
+};
+
+DrawMode bigCircleDrawMode = SECTOR;
+DrawMode triangleDrawMode = BARYCENTRIC;
+DrawMode smallCircleDrawMode = RADIAL;
+DrawMode starDrawMode = BARYCENTRIC;
 
 typedef struct
 {
@@ -123,22 +135,41 @@ public:
 					global_clicked_pixel.X, global_clicked_pixel.Y);
 
 			float x0 = 0, y0 = 0, x1 = frame.width, y1 = frame.height;
-			RadialInterpolator selected(x0, y0, x1, y1, COLOR(255, 0, 0), COLOR(255, 0, 0), 0);
-			RadialInterpolator radialInterpolator(x0, y0, x1, y1, COLOR(255, 0, 0), COLOR(100, 20, 0), global_angle);
-			RadialInterpolator radialInterpolator2(x0, y0, x1, y1, COLOR(255, 255, 0), COLOR(20, 255, 255), global_angle);
+			
+			
+			RadialInterpolator selected(x0, y0, x1, y1, HSVCOLOR(255, 1, 1).convertToRgb(), COLOR(255, 0, 0), 0);
+
+			SectorInterpolator sectorInterpolator(C.x, C.y);
+
+			RadialInterpolator radialInterpolator(x0, y0, x1, y1, COLOR(255, 0, 0), HSVCOLOR(311, .1, .1).convertToRgb(), global_angle);
+
+			BarycentricInterpolator triangleInterpolator(
+				triangleA.x + 0.5, triangleA.y + 0.5,
+				triangleB.x + 0.5, triangleB.y + 0.5,
+				triangleC.x + 0.5, triangleC.y + 0.5, 
+				COLOR(255, 255, 255), 
+				HSVCOLOR(51, 1, .5).convertToRgb(),
+				COLOR(128, 128, 128));
+
+
 			// Рисуем описанную окружность
-			frame.Circle((int)C.x, (int)C.y, (int)a, bigCircleSelected ? selected : radialInterpolator);
+			
+			SectorInterpolator sector(C.x, C.y);
+			if (bigCircleSelected)
+				frame.Circle((int)C.x, (int)C.y, (int)a, selected);
+			else if (bigCircleDrawMode == DrawMode::SECTOR)
+				frame.Circle((int)C.x, (int)C.y, (int)a, sectorInterpolator);
+			else if (bigCircleDrawMode == DrawMode::RADIAL)
+				frame.Circle((int)C.x, (int)C.y, (int)a, radialInterpolator);
+			else if (bigCircleDrawMode == DrawMode::BARYCENTRIC)
+				frame.Circle((int)C.x, (int)C.y, (int)a, triangleInterpolator);
+
+
+
 
 			//Рисуем треугольник
 
-			BarycentricInterpolator triangle(
-				triangleA.x + 0.5, triangleA.y + 0.5,
-				triangleB.x + 0.5, triangleB.y + 0.5,
-				triangleC.x + 0.5, triangleC.y + 0.5, COLOR(255, 255, 0), COLOR(20, 255, 142), COLOR(31, 173, 142, 31));
-			BarycentricInterpolator triangleMetallic(
-				triangleA.x + 0.5, triangleA.y + 0.5,
-				triangleB.x + 0.5, triangleB.y + 0.5,
-				triangleC.x + 0.5, triangleC.y + 0.5, COLOR(255, 255, 255), COLOR(51, 51, 51), COLOR(128, 128, 128));
+			
 			if (triangleSelected) {
 				frame.Triangle(
 					triangleA.x + 0.5, triangleA.y + 0.5,
@@ -146,16 +177,35 @@ public:
 					triangleC.x + 0.5, triangleC.y + 0.5,
 					selected);
 			}
-			else {
+			else if (triangleDrawMode == DrawMode::SECTOR)
+				frame.Triangle(
+					triangleA.x + 0.5, triangleA.y + 0.5,
+					triangleB.x + 0.5, triangleB.y + 0.5,
+					triangleC.x + 0.5, triangleC.y + 0.5, 
+					sectorInterpolator);
+			else if (triangleDrawMode == DrawMode::RADIAL)
+				frame.Triangle(
+					triangleA.x + 0.5, triangleA.y + 0.5,
+					triangleB.x + 0.5, triangleB.y + 0.5,
+					triangleC.x + 0.5, triangleC.y + 0.5, 
+					radialInterpolator);
+			else if (triangleDrawMode == DrawMode::BARYCENTRIC)
 				frame.Triangle(
 					triangleA.x + 0.5, triangleA.y + 0.5,
 					triangleB.x + 0.5, triangleB.y + 0.5,
 					triangleC.x + 0.5, triangleC.y + 0.5,
-					triangle);
-			}
+					triangleInterpolator);
 
-			// Рисуем вписанную окружность
-			frame.Circle((int)C.x, (int)C.y, (int)(a * 0.5), smallCircleSelected ? selected : radialInterpolator2);
+
+			if (smallCircleSelected)
+				frame.Circle((int)C.x, (int)C.y, (int)(a * 0.5), selected);
+			else if (smallCircleDrawMode == DrawMode::SECTOR)
+				frame.Circle((int)C.x, (int)C.y, (int)(a * 0.5), sectorInterpolator);
+			else if (smallCircleDrawMode == DrawMode::RADIAL)
+				frame.Circle((int)C.x, (int)C.y, (int)(a * 0.5), radialInterpolator);
+			else if (smallCircleDrawMode == DrawMode::BARYCENTRIC)
+				frame.Circle((int)C.x, (int)C.y, (int)(a * 0.5), triangleInterpolator);
+
 
 			// Добавим заливку для звезды в центре
 			if (starSelected) {
@@ -166,13 +216,29 @@ public:
 				frame.Triangle(star[7].x, star[7].y, star[1].x, star[1].y, star[3].x, star[3].y, selected);
 				frame.Triangle(star[7].x, star[7].y, star[5].x, star[5].y, star[3].x, star[3].y, selected);
 			}
-			else {
-				frame.Triangle(star[7].x, star[7].y, star[0].x, star[0].y, star[1].x, star[1].y, triangleMetallic);
-				frame.Triangle(star[1].x, star[1].y, star[2].x, star[2].y, star[3].x, star[3].y, triangleMetallic);
-				frame.Triangle(star[5].x, star[5].y, star[4].x, star[4].y, star[3].x, star[3].y, triangleMetallic);
-				frame.Triangle(star[5].x, star[5].y, star[6].x, star[6].y, star[7].x, star[7].y, triangleMetallic);
-				frame.Triangle(star[7].x, star[7].y, star[1].x, star[1].y, star[3].x, star[3].y, triangleMetallic);
-				frame.Triangle(star[7].x, star[7].y, star[5].x, star[5].y, star[3].x, star[3].y, triangleMetallic);
+			else if (starDrawMode == DrawMode::SECTOR) {
+				frame.Triangle(star[7].x, star[7].y, star[0].x, star[0].y, star[1].x, star[1].y, sectorInterpolator);
+				frame.Triangle(star[1].x, star[1].y, star[2].x, star[2].y, star[3].x, star[3].y, sectorInterpolator);
+				frame.Triangle(star[5].x, star[5].y, star[4].x, star[4].y, star[3].x, star[3].y, sectorInterpolator);
+				frame.Triangle(star[5].x, star[5].y, star[6].x, star[6].y, star[7].x, star[7].y, sectorInterpolator);
+				frame.Triangle(star[7].x, star[7].y, star[1].x, star[1].y, star[3].x, star[3].y, sectorInterpolator);
+				frame.Triangle(star[7].x, star[7].y, star[5].x, star[5].y, star[3].x, star[3].y, sectorInterpolator);
+			}
+			else if (starDrawMode == DrawMode::RADIAL) {
+				frame.Triangle(star[7].x, star[7].y, star[0].x, star[0].y, star[1].x, star[1].y, radialInterpolator);
+				frame.Triangle(star[1].x, star[1].y, star[2].x, star[2].y, star[3].x, star[3].y, radialInterpolator);
+				frame.Triangle(star[5].x, star[5].y, star[4].x, star[4].y, star[3].x, star[3].y, radialInterpolator);
+				frame.Triangle(star[5].x, star[5].y, star[6].x, star[6].y, star[7].x, star[7].y, radialInterpolator);
+				frame.Triangle(star[7].x, star[7].y, star[1].x, star[1].y, star[3].x, star[3].y, radialInterpolator);
+				frame.Triangle(star[7].x, star[7].y, star[5].x, star[5].y, star[3].x, star[3].y, radialInterpolator);
+			}
+			else if (starDrawMode == DrawMode::BARYCENTRIC) {
+				frame.Triangle(star[7].x, star[7].y, star[0].x, star[0].y, star[1].x, star[1].y, triangleInterpolator);
+				frame.Triangle(star[1].x, star[1].y, star[2].x, star[2].y, star[3].x, star[3].y, triangleInterpolator);
+				frame.Triangle(star[5].x, star[5].y, star[4].x, star[4].y, star[3].x, star[3].y, triangleInterpolator);
+				frame.Triangle(star[5].x, star[5].y, star[6].x, star[6].y, star[7].x, star[7].y, triangleInterpolator);
+				frame.Triangle(star[7].x, star[7].y, star[1].x, star[1].y, star[3].x, star[3].y, triangleInterpolator);
+				frame.Triangle(star[7].x, star[7].y, star[5].x, star[5].y, star[3].x, star[3].y, triangleInterpolator);
 			}
 		}
 		else {
