@@ -27,44 +27,6 @@ public:
 
 	COLOR color(float x, float y)
 	{
-		int r = 255, g = 0, b = 0;
-		double angle = 180 + (getangle(x, y) * 180) / 3.14;
-		if (angle >= 0 && angle < 60) {
-			r = 255;
-			g = (angle / 60.0) * 255;
-			b = 0;
-		}
-		else if (angle >= 60 && angle < 120) {
-			angle -= 60;
-			r = (1 - angle / 60.0) * 255;
-			g = 255;
-			b = 0;
-		}
-		else if (angle >= 120 && angle < 180) {
-			angle -= 120;
-			r = 0;
-			g = 255;
-			b = (angle / 60.0) * 255;
-		}
-		else if (angle >= 180 && angle < 240) {
-			angle -= 180;
-			r = 0;
-			g = (1 - angle / 60.0) * 255;
-			b = 255;
-		}
-		else if (angle >= 240 && angle < 300) {
-			angle -= 240;
-			r = (angle / 60.0) * 255;
-			g = 0;
-			b = 255;
-		}
-		else if (angle >= 300 && angle < 360) {
-			angle -= 300;
-			r = 255;
-			g = 0;
-			b = (1 - angle / 60.0) * 255;
-		}
-
-		return COLOR(r, g, b);
+		return HSVCOLOR(180 + (getangle(x, y) * 180) / 3.14, 1, 1).convertToRgb();
 	}
 };
