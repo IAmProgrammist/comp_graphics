@@ -147,7 +147,7 @@ public:
 				triangleA.x + 0.5, triangleA.y + 0.5,
 				triangleB.x + 0.5, triangleB.y + 0.5,
 				triangleC.x + 0.5, triangleC.y + 0.5, 
-				COLOR(255, 255, 255), 
+				COLOR(255, 255, 255, 60), 
 				HSVCOLOR(51, 1, .5).convertToRgb(),
 				COLOR(128, 128, 128));
 
@@ -242,8 +242,18 @@ public:
 			}
 		}
 		else {
-			// Ожидаем после проверки
-		}
+			float x0 = 0, y0 = 0, x1 = frame.width, y1 = frame.height;
+			RadialInterpolator radialInterpolator(x0, y0, x1, y1, { COLOR(0, 255, 0), COLOR(255, 0, 0), COLOR(255, 0, 255) }, global_angle / 5);
+			double t = (3 * a) / sqrt(3);
+			coordinate triangleA = { C.x, C.y - a };
+			coordinate triangleB = { C.x - t / 2, C.y + a / 2 };
+			coordinate triangleC = { C.x + t / 2, C.y + a / 2 };
+			frame.Triangle(
+				triangleA.x + 0.5, triangleA.y + 0.5,
+				triangleB.x + 0.5, triangleB.y + 0.5,
+				triangleC.x + 0.5, triangleC.y + 0.5,
+				radialInterpolator);
+}
 		// Рисуем пиксель, на который кликнул пользователь
 		if (global_clicked_pixel.X >= 0 && global_clicked_pixel.X < W &&
 			global_clicked_pixel.Y >= 0 && global_clicked_pixel.Y < H)
