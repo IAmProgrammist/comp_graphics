@@ -396,6 +396,8 @@ public:
 
 				SetPixel(x0 + X0, y0 + x, color);
 
+				if (x == 0) continue;
+
 				color = Interpolator.color(x0 + X0 + 0.5f, y0 - x);
 
 				// Для рисования полупрозрачных фигур будем использовать альфа-смешивание

@@ -5,28 +5,40 @@
 class RadialInterpolator
 {
 	float cx, cy; // Центр прямоугольника
-	COLOR C0, C1; // Цвета радиальной заливки
+	std::vector<COLOR> colors; // Цвета радиальной заливки
 	float angle;  // Начальный угол заливки
 
 public:
 	RadialInterpolator(float _x0, float _y0, float _x1, float _y1, COLOR A0, COLOR A1, float _angle) :
 		cx((_x0 + _x1) / 2.0f), cy((_y0 + _y1) / 2.0f),
-		C0(A0), C1(A1), angle(_angle)
+		colors({A0, A1}), angle(_angle)
 	{
 	}
-
+	RadialInterpolator(float _x0, float _y0, float _x1, float _y1, std::vector<COLOR> _colors, float _angle) :
+		cx((_x0 + _x1) / 2.0f), cy((_y0 + _y1) / 2.0f),
+		colors(_colors), angle(_angle)
+	{
+	}
 
 	COLOR color(float x, float y)
 	{
 		double dx = (double)x - cx, dy = (double)y - cy;
 		double radius = sqrt(dx * dx + dy * dy);
 
-		float h0 = (sin(radius / 10 + angle) + 1.0f) / 2;
-		float h1 = 1 - h0;
+		double h0 = radius / 40 + angle;
+		h0 -= floor(h0);
 
-		float r = h0 * C0.RED + h1 * C1.RED;
-		float g = h0 * C0.GREEN + h1 * C1.GREEN;
-		float b = h0 * C0.BLUE + h1 * C1.BLUE;
+		h0 *= colors.size();
+		int h0IndexColors = h0;
+		int h1IndexColors = h0IndexColors + 1;
+		COLOR colorh01 = colors[h0IndexColors % colors.size()];
+		COLOR colorh11 = colors[h1IndexColors % colors.size()];
+		h0 -= floor(h0);
+		double h1 = 1 - h0;
+
+		double r = h0 * colorh11.RED +h1 * colorh01.RED;
+		double g = h0 * colorh11.GREEN +h1 * colorh01.GREEN;
+		double b = h0 * colorh11.BLUE +h1 * colorh01.BLUE;
 
 		return COLOR(r, g, b);
 
