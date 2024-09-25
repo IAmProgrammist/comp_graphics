@@ -165,6 +165,7 @@ public:
 
 		double rawX0 = (Y0 + 0.5f - y0) / (y1 - y0) * (x1 - x0) + x0;
 		double rawX1 = (Y0 + 0.5f - y0) / (y2 - y0) * (x2 - x0) + x0;
+		double dX0 = (x1 - x0) / (y1 - y0), dX1 = (x2 - x0) / (y2 - y0);
 		bool should_swap = rawX0 > rawX1;
 		int X0, X1;
 		// Рисование верхней части треугольника
@@ -183,12 +184,13 @@ public:
 				SetPixel(x, y, color);
 			}
 
-			rawX0 += (x1 - x0) / (y1 - y0);
-			rawX1 += (x2 - x0) / (y2 - y0);
+			rawX0 += dX0;
+			rawX1 += dX1;
 		}
 
 		rawX0 = (Y1 + 0.5f - y1) / (y2 - y1) * (x2 - x1) + x1;
 		rawX1 = (Y1 + 0.5f - y0) / (y2 - y0) * (x2 - x0) + x0;
+		dX0 = (x2 - x1) / (y2 - y1);
 		should_swap = rawX0 > rawX1;
 		// Рисование нижней части треугольника
 		for (float y = Y1 + 0.5f; y < Y2; y++)
@@ -206,8 +208,8 @@ public:
 				SetPixel(x, y, color);
 			}
 
-			rawX0 += (x2 - x1) / (y2 - y1);
-			rawX1 += (x2 - x0) / (y2 - y0);
+			rawX0 += dX0;
+			rawX1 += dX1;
 		}
 
 	}
@@ -249,6 +251,7 @@ public:
 
 		double rawX0 = (Y0 + 0.5f - y0) / (y1 - y0) * (x1 - x0) + x0;
 		double rawX1 = (Y0 + 0.5f - y0) / (y2 - y0) * (x2 - x0) + x0;
+		double dX0 = (x1 - x0) / (y1 - y0), dX1 = (x2 - x0) / (y2 - y0);
 		bool should_swap = rawX0 > rawX1;
 		int X0, X1;
 
@@ -280,12 +283,13 @@ public:
 				SetPixel(x, y, color);
 			}
 
-			rawX0 += (x1 - x0) / (y1 - y0);
-			rawX1 += (x2 - x0) / (y2 - y0);
+			rawX0 += dX0;
+			rawX1 += dX1;
 		}
 
 		rawX0 = (Y1 + 0.5f - y1) / (y2 - y1) * (x2 - x1) + x1;
 		rawX1 = (Y1 + 0.5f - y0) / (y2 - y0) * (x2 - x0) + x0;
+		dX0 = (x2 - x1) / (y2 - y1);
 		should_swap = rawX0 > rawX1;
 
 		// Рисование нижней части треугольника
@@ -316,8 +320,8 @@ public:
 				SetPixel(x, y, color);
 			}
 
-			rawX0 += (x2 - x1) / (y2 - y1);
-			rawX1 += (x2 - x0) / (y2 - y0);
+			rawX0 += dX0;
+			rawX1 += dX1;
 		}
 
 	}
