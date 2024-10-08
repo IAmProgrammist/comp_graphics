@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lab_1_basics", "lab_1_basic
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lab_2_colored_square", "lab_2_colored_square\lab_2_colored_square.vcxproj", "{C1F31C50-AAF0-4FB9-8AEC-14497708B507}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lab_3_affine_transformations", "lab_3_affine_transfromations\lab_3_affine_transfromations.vcxproj", "{1F8D2C7A-719D-43C4-BE9B-9369E0D55E26}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{C1F31C50-AAF0-4FB9-8AEC-14497708B507}.Release|x64.Build.0 = Release|x64
 		{C1F31C50-AAF0-4FB9-8AEC-14497708B507}.Release|x86.ActiveCfg = Release|Win32
 		{C1F31C50-AAF0-4FB9-8AEC-14497708B507}.Release|x86.Build.0 = Release|Win32
+		{1F8D2C7A-719D-43C4-BE9B-9369E0D55E26}.Debug|x64.ActiveCfg = Debug|x64
+		{1F8D2C7A-719D-43C4-BE9B-9369E0D55E26}.Debug|x64.Build.0 = Debug|x64
+		{1F8D2C7A-719D-43C4-BE9B-9369E0D55E26}.Debug|x86.ActiveCfg = Debug|Win32
+		{1F8D2C7A-719D-43C4-BE9B-9369E0D55E26}.Debug|x86.Build.0 = Debug|Win32
+		{1F8D2C7A-719D-43C4-BE9B-9369E0D55E26}.Release|x64.ActiveCfg = Release|x64
+		{1F8D2C7A-719D-43C4-BE9B-9369E0D55E26}.Release|x64.Build.0 = Release|x64
+		{1F8D2C7A-719D-43C4-BE9B-9369E0D55E26}.Release|x86.ActiveCfg = Release|Win32
+		{1F8D2C7A-719D-43C4-BE9B-9369E0D55E26}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
