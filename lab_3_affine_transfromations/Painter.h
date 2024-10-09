@@ -51,7 +51,7 @@ public:
 
 		// Код для отрисовки основного задания.
 		if (MAIN_TASK) {
-			int W = frame.width - frame.width * 0.02, H = frame.height - frame.height * 0.02;
+			/*int W = frame.width - frame.width * 0.02, H = frame.height - frame.height * 0.02;
 			double t1XOffset = frame.width * 0.01 + sawtooth(312 + global_angle * 65, W * 2), t1YOffset = frame.height * 0.01 + sawtooth(41 + global_angle * 131, H * 2);
 			double t2XOffset = frame.width * 0.01 + sawtooth(19 + global_angle * 102, W * 2), t2YOffset = frame.height * 0.01 + sawtooth(901 + global_angle * 12, H * 2);
 			double t3XOffset = frame.width * 0.01 + sawtooth(71 + global_angle * 25, W * 2), t3YOffset = frame.height * 0.01 + sawtooth(47 + global_angle * 32, H * 2);
@@ -68,7 +68,44 @@ public:
 			frame.Triangle(frame.width * 0.01, frame.height * 0.01, frame.width * 0.01, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01, t2);
 			frame.Triangle(frame.width * 0.01, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01, t2);
 			frame.Triangle(frame.width * 0.01, frame.height * 0.01, frame.width * 0.01, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01, t3);
-			frame.Triangle(frame.width * 0.01, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01, t3);
+			frame.Triangle(frame.width * 0.01, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01, t3);*/
+
+			int W = frame.width - frame.width * 0.02, H = frame.height - frame.height * 0.02;
+			Vector t2Offset(frame.width * 0.01 + sawtooth(19 + global_angle * 102, W * 2), frame.height * 0.01 + sawtooth(901 + global_angle * 12, H * 2));
+			Vector t3Offset(frame.width * 0.01 + sawtooth(71 + global_angle * 25, W * 2), frame.height * 0.01 + sawtooth(47 + global_angle * 32, H * 2));
+
+			Vector t1Offset(frame.width * 0.01 + sawtooth(312 + global_angle * 65, W * 2), frame.height * 0.01 + sawtooth(41 + global_angle * 131, H * 2));
+			double scale1 = 50 + sawtooth(global_angle * 10, 30);
+			double rot1 = 12 + global_angle;
+			Matrix S1 = { scale1, 0, 0,
+							0, scale1, 0,
+							0, 0, 1 };
+			Matrix R1 = { cos(rot1), -sin(rot1),  0,
+							sin(rot1),  cos(rot1),  0,
+									0,           0,  1 };
+			Matrix T1 = { 1, 0, t1Offset.x(),
+							0, 1, t1Offset.y(),
+							0, 0,       1 };
+			Matrix SRT1 = (T1 * R1) * S1;
+			Vector points1[] = { Vector(-0.5, -0.5), Vector(-0.5, 0.5), Vector(0.5, 0.5), Vector(0.5, -0.5) };
+			for (int i = 0; i < _countof(points1); i++)
+			{
+				points1[i] = SRT1 * points1[i];
+			}
+
+			SectorInterpolator t1s(frame.width * 0.01 + sawtooth(312 + global_angle * 65, W * 2), frame.height * 0.01 + sawtooth(41 + global_angle * 131, H * 2));
+			RadialInterpolator t2s(t2Offset.x(), t2Offset.y(), t2Offset.x(), t2Offset.y(), {{255, 180, 0}, {180, 0, 99}, {188, 188, 188}}, global_angle / 5);
+			BarycentricInterpolator t3s(frame.width * 0.01, frame.height * 0.01, frame.width * 0.01, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01,
+				{ 91, 9, 39, 12 }, { 98, 192, 67 }, { 76, 100, 158 });
+
+			ReuleauxTriangleInterpolator<SectorInterpolator> t11(points1[0].x(), points1[0].y(), points1[1].x(), points1[1].y(), points1[2].x(), points1[2].y(),
+				-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, .3, t1s);
+			frame.Triangle(frame.width * 0.01, frame.height * 0.01, frame.width * 0.01, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01, t11);
+			frame.Triangle(frame.width * 0.01, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01, t11);
+			ReuleauxTriangleInterpolator<SectorInterpolator> t12(points1[2].x(), points1[2].y(), points1[3].x(), points1[3].y(), points1[0].x(), points1[0].y(),
+				0.5, 0.5, -0.5, 0.5, -0.5, -0.5, .3, t1s);
+			frame.Triangle(frame.width * 0.01, frame.height * 0.01, frame.width * 0.01, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01, t12);
+			frame.Triangle(frame.width * 0.01, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01 + H, frame.width * 0.01 + W, frame.height * 0.01, t12);
 		}
 		else {
 		}

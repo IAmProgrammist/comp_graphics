@@ -81,6 +81,17 @@ public:
 				 0, 0, 1 };
 	}
 
+	static Matrix WorldToScreen(float X1, float Y1, float X2, float Y2, float x1, float
+		y1, float x2, float y2)
+	{
+		float px = (X2 - X1) / (x2 - x1), py = (Y2 - Y1) / (y2 - y1);
+		return {
+			px, 0, 0,
+			0, -py, 0,
+			X1 - x1 * px, Y2 + y1 * py, 1 };
+	}
+
+
 	Matrix operator * (Matrix& another) {
 		double dataNew[9] = {};
 		double* matrixNew[3];

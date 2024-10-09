@@ -24,6 +24,14 @@ class ReuleauxTriangleInterpolator
 	double smallCircleRadius;
 	double sideSize;
 	ColorInterpolator colorInterpolator;
+	double x0;
+	double y0;
+	double x1;
+	double y1;
+	double x2;
+	double y2;
+	double wx0, wy0, wx1, wy1, wx2, wy2;
+	double S;
 
 	std::pair<bool, Vector> findPointsIntersection(double ax0, double ay0, double ax1, double ay1,
 		double bx0, double by0, double bx1, double by1) {
@@ -40,8 +48,11 @@ class ReuleauxTriangleInterpolator
 	}
 
 public:
-	ReuleauxTriangleInterpolator(double x, double y, double size, double angle, double rounding, ColorInterpolator colorInterpolator) : colorInterpolator(colorInterpolator) {
-		angle = angle < 0 ? (2 * PI / 3. + fmod(angle, 2 * PI / 3.)) : (fmod(angle, 2 * PI / 3.));
+	ReuleauxTriangleInterpolator(double _x0, double _y0, double _x1, double _y1, double _x2, double _y2, double _wx0, double _wy0, double _wx1, double _wy1,
+		double _wx2, double _wy2,
+		double rounding, ColorInterpolator colorInterpolator) : colorInterpolator(colorInterpolator),
+		wx0(_wx0), wy0(_wy0), wx1(_wx1), wy1(_wy1), wx2(_wx2), wy2(_wy2),
+		x0(_x0), y0(_y0), x1(_x1), y1(_y1), x2(_x2), y2(_y2), S((_y1 - _y2)* (_x0 - _x2) + (_x2 - _x1) * (_y0 - _y2)) {
 		rounding = max(min(rounding, 1), EPS);
 		double roundang = rounding * (PI / 6);
 		// Определим основные точки
@@ -64,29 +75,11 @@ public:
 		this->O2 = findPointsIntersection(D.x(), D.y(), E.x(), E.y(), B.x(), B.y(), G.x(), G.y()).second;
 		this->O3 = findPointsIntersection(B.x(), B.y(), H.x(), H.y(), C.x(), C.y(), J.x(), J.y()).second;
 
-		Matrix S = Matrix::scale(size);
-		Matrix Ro = Matrix::rotation(angle);
-		Matrix T = Matrix::transfrom(x, y);
-		Matrix SRT = (T * Ro) * S;
-
-		B = SRT * B;
-		C = SRT * C;
-		D = SRT * D;
-		E = SRT * E;
-		F = SRT * F;
-		G = SRT * G;
-		H = SRT * H;
-		I = SRT * I;
-		J = SRT * J;
-		O1 = SRT * O1;
-		O2 = SRT * O2;
-		O3 = SRT * O3;
-
-		this->sideSize = a * size;
+		this->sideSize = a;
 		this->smallCircleRadius = sqrt(pow(F.x() - O1.x(), 2) + pow(F.y() - O1.y(), 2));
 	}
 
-	COLOR color(float x, float y) {
+	COLOR main(float x, float y) {
 		double O1dy = F.y() - I.y();
 		double O1dx = F.x() - I.x();
 		double O2dy = G.y() - E.y();
@@ -110,5 +103,23 @@ public:
 		}
 
 		return COLOR(0, 0, 0, 0);
+	}
+
+	COLOR color(float x, float y) {
+		// Барицентрическая интерполяция
+		float h0 = ((y1 - y2) * (x - x2) + (x2 - x1) * (y - y2)) / S;
+		float h1 = ((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / S;
+		float h2 = ((y0 - y1) * (x - x1) + (x1 - x0) * (y - y1)) / S;
+		//float h2 = 1 - h0 - h1;
+		// Если точка (x, y) находится вне треугольника
+		if (h0 < -1E-6 || h1 < -1E-6 || h2 < -1E-6)
+		{
+			return COLOR(0, 0, 0, 0); // Ошибка алгоритма растеризации, если рисуется чёрный пиксель
+		}
+		// Интерполируем мировые координаты вершин
+		float wx = h0 * wx0 + h1 * wx1 + h2 * wx2;
+		float wy = h0 * wy0 + h1 * wy1 + h2 * wy2;
+		return main(wx, wy);
+
 	}
 };
