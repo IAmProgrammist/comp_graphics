@@ -46,10 +46,10 @@ public:
             projection_matrix = Matrix::Axonometric(3.14 / 4., 3.14 / 6., -2.0 * frame.width / frame.height, 2.0 * frame.width / frame.height, -2.0, 2.0, 1, 140.0f);
         }
         else if (frame.perspective == Perspective::DIMETRIC) {
-            projection_matrix = Matrix::Axonometric(0.5061, 0.45378561, -2.0 * frame.width / frame.height, 2.0 * frame.width / frame.height, -2.0, 2.0, 1, 140.0f);
+            projection_matrix = Matrix::Axonometric(0.5152212, 0.45779986, -2.0 * frame.width / frame.height, 2.0 * frame.width / frame.height, -2.0, 2.0, 1, 140.0f);
         }
         else if (frame.perspective == Perspective::ISOMETRIC) {
-            projection_matrix = Matrix::Axonometric(0.61086523819, 3.14 / 4., -2.0 * frame.width / frame.height, 2.0 * frame.width / frame.height, -2.0, 2.0, 1, 140.0f);
+            projection_matrix = Matrix::Axonometric(0.615479708, 3.14 / 4., -2.0 * frame.width / frame.height, 2.0 * frame.width / frame.height, -2.0, 2.0, 1, 140.0f);
         }
 
         
@@ -61,19 +61,7 @@ public:
             proj_viewport; // Преобразование нормализованных координат в оконные
 
         std::vector<Vector> B(A.size());
-        std::vector<Vector> Axises = {
-            {0, 0, 0},
-            {5, 0, 0},
-            {0, 5, 0},
-            {0, 0, 5},
-        };
-
-        std::vector<COLOR> AxisesColors = {
-            {255, 0, 0},
-            {0, 255, 0},
-            {0, 0, 255},
-        };
-
+        
         for (int i = 0; i < A.size(); i++)
         {
             B[i] = A[i] * general_matrix;
@@ -83,21 +71,6 @@ public:
             B[i].y /= B[i].w;
             B[i].z /= B[i].w;
             B[i].w = 1;
-        }
-
-        for (int i = 0; i < Axises.size(); i++)
-        {
-            Axises[i] = Axises[i] * proj_viewport;
-
-            // Преобразование однородных координат в обычные
-            Axises[i].x /= Axises[i].w;
-            Axises[i].y /= Axises[i].w;
-            Axises[i].z /= Axises[i].w;
-            Axises[i].w = 1;
-        }
-
-        for (int i = 1; i < Axises.size(); i++) {
-            frame.DrawLine(Axises[i].x, Axises[i].y, Axises[0].x, Axises[0].y, AxisesColors[i - 1]);
         }
 
         for (int i = 0; i < polygons.size(); i++) {
