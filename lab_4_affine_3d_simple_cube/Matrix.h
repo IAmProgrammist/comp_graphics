@@ -169,6 +169,13 @@ public:
        return R;
    }
 
+   static Matrix Axonometric(float xAngle, float yAngle, float left, float right, float bottom, float top, float nearPlane, float farPlane) {
+       return
+           Matrix::RotationY(-3.14 / 2 + yAngle) *
+           Matrix::RotationX(xAngle) *
+           Matrix::Ortho(left, right, bottom, top, nearPlane, farPlane);
+   }
+
    friend class Vector;
 };
 

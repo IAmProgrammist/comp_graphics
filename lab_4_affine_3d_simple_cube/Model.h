@@ -3,9 +3,7 @@
 #include <vector>
 #include <tuple>
 #include "Vector.h"
-#include "Frame.h"
 
-const double HANDLE_WIDTH = 0.05;
 
 // Возвращает точки объекта
 const std::vector<Vector> get_points(float scale_factor = 1.) {
@@ -142,3 +140,48 @@ std::vector<COLOR> materials = {
 	{112, 113, 173},
 	{146, 211, 170}
 };
+
+/*const std::vector<Vector> get_points(float scale_factor = 1.) {
+	std::vector<Vector> result = {
+		{0, 0, 0},
+		{1, 0, 0},
+		{1, 0, 1},
+		{0, 0, 1},
+		{0, 1, 0},
+		{1, 1, 0},
+		{1, 1, 1},
+		{0, 1, 1},
+	};
+
+	return result;
+};
+
+std::vector<std::tuple<int, int, int>> polygons = {
+	{0, 1, 2}, 
+	{0, 3, 2},
+	{4, 5, 6},
+	{4, 7, 6},
+	{0, 4, 3},
+	{4, 7, 3},
+	{0, 4, 1},
+	{5, 4, 1},
+	{5, 2, 1},
+	{5, 2, 6},
+	{2, 6, 3},
+	{7, 6, 3},
+};
+
+std::vector<COLOR> materials = {
+	{255, 0, 0},
+	{255, 0, 0},
+	{0, 255, 0},
+	{0, 255, 0},
+	{0, 0, 255},
+	{0, 0, 255},
+	{255, 255, 0},
+	{255, 255, 0},
+	{0, 255, 255},
+	{0, 255, 255},
+	{255, 0, 255},
+	{255, 0, 255}
+};*/
