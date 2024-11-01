@@ -43,13 +43,13 @@ public:
             projection_matrix = Matrix::Frustum(-0.5 * frame.width / frame.height, 0.5 * frame.width / frame.height, -0.5, 0.5, 1, 140);
         }
         else if (frame.perspective == Perspective::TRIMETRIC) {
-            projection_matrix = Matrix::Axonometric(3.14 / 4., 3.14 / 6., -2.0 * frame.width / frame.height, 2.0 * frame.width / frame.height, -2.0, 2.0, 1, 140.0f);
+            projection_matrix = Matrix::Axonometric(3.14 / 4., 3.14 / 6., -2.0 * frame.width / frame.height, 2.0 * frame.width / frame.height, -2.0, 2.0, 0, 140.0f) * Matrix::Translation(0, 0, 1);
         }
         else if (frame.perspective == Perspective::DIMETRIC) {
-            projection_matrix = Matrix::Axonometric(0.5152212, 0.45779986, -2.0 * frame.width / frame.height, 2.0 * frame.width / frame.height, -2.0, 2.0, 1, 140.0f);
+            projection_matrix = Matrix::Axonometric(0.5152212, 0.45779986, -2.0 * frame.width / frame.height, 2.0 * frame.width / frame.height, -2.0, 2.0, 0, 140.0f) * Matrix::Translation(0, 0, 1);
         }
         else if (frame.perspective == Perspective::ISOMETRIC) {
-            projection_matrix = Matrix::Axonometric(0.615479708, 3.14 / 4., -2.0 * frame.width / frame.height, 2.0 * frame.width / frame.height, -2.0, 2.0, 1, 140.0f);
+            projection_matrix = Matrix::Axonometric(0.615479708, 3.14 / 4., -2.0 * frame.width / frame.height, 2.0 * frame.width / frame.height, -2.0, 2.0, 0, 140.0f) * Matrix::Translation(0, 0, 1);
         }
 
         

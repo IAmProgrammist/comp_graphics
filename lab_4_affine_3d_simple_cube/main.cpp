@@ -136,7 +136,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			Matrix::RotationX(x_rot) *
 			Matrix::RotationY(y_rot) *
 			Matrix::RotationZ(z_rot) *
-			Matrix::Translation(x_offset, y_offset, z_offset));
+			Matrix::Translation(x_offset, y_offset, (currentPerspective != Perspective::ORTHO && currentPerspective != Perspective::FRUSTUM) ? z_offset + 4 : z_offset));
 
 		Painter painter;
 
