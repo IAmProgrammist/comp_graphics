@@ -10,7 +10,7 @@ float time = 0;
 float scale = 0;
 float x_offset = 0;
 float y_offset = 0;
-float z_offset = -4;
+float z_offset = -2;
 float x_rot = 0;
 float y_rot = 0;
 float z_rot = 0;
@@ -56,8 +56,8 @@ public:
         Matrix proj_viewport = projection_matrix *                 // Проектирование
             Matrix::Viewport(0, 0, frame.width, frame.height);
 
-        Matrix general_matrix =
-            frame.transform *     // Перенос куба против оси z
+        Matrix general_matrix = 
+            frame.transform *
             proj_viewport; // Преобразование нормализованных координат в оконные
 
         std::vector<Vector> B(A.size());
@@ -79,7 +79,11 @@ public:
             auto pointC = B[std::get<2>(polygons[i])];
             auto polygonColor = materials[i];
 
-            frame.Triangle(pointA.x, pointA.y, pointA.z, pointB.x, pointB.y, pointB.z, pointC.x, pointC.y, pointC.z, polygonColor, draw_mode);
+            frame.Triangle(
+                pointA.x, pointA.y, pointA.z, pointA.w, 
+                pointB.x, pointB.y, pointB.z, pointB.w, 
+                pointC.x, pointC.y, pointC.z, pointC.w, 
+                polygonColor);
         }
     }
 };

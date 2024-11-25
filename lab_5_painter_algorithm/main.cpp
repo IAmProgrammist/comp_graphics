@@ -12,6 +12,11 @@ LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 
 HWND hWndStatusBar; // Дескриптор компонента StatusBar
 
+bool lmbPressed = false;
+bool lmbFirst = true;
+int prevMouseX = 0;
+int prevMouseY = 0;
+
 int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs, int nWinMode)
 {
 	char szWinName[] = "Graphics Window Class"; // Имя класса окна
@@ -35,7 +40,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs,
 		return 0;
 
 	hWnd = CreateWindowA(szWinName, // Создать окно
-		"Лабораторная работа №4. Аффинные преобразования в пространстве. Вращение куба",
+		"Лабораторная работа №5. Алгоритмы удаления невидимых поверхностей",
 		WS_OVERLAPPEDWINDOW, // Стиль окна
 		CW_USEDEFAULT, // x-координата
 		CW_USEDEFAULT, // y-координата
@@ -95,6 +100,37 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	break;
 
+	case WM_LBUTTONDOWN:
+	{
+		lmbPressed = true;
+	}
+	break;
+
+	case WM_LBUTTONUP:
+	{
+		lmbPressed = false;
+		lmbFirst = true;
+	}
+	break;
+	case WM_MOUSEMOVE:
+	{
+		if (lmbPressed) {
+			int xMouseMove = LOWORD(lParam), yMouseMove = HIWORD(lParam);
+
+			if (lmbFirst) {
+				prevMouseX = xMouseMove;
+				prevMouseY = yMouseMove;
+				lmbFirst = false;
+			}
+			else {
+				y_rot += (xMouseMove - prevMouseX) / 100.0;
+				x_rot += (yMouseMove - prevMouseY) / 100.0;
+				prevMouseX = xMouseMove;
+				prevMouseY = yMouseMove;
+			}
+		}
+	}
+	break;
 
 	// Обработка сообщения на перерисовку окна
 	case WM_PAINT:
@@ -114,68 +150,21 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 		int ratio = pixelSize; // Размер "большого" пикселя
 
-		int actualW = width / ratio;
-		int actualH = (height - 22) / ratio;
-
-		int W = actualW / 2;
-		int H = actualH / 2; // Отнимем высоту StatusBar'а
+		int W = width / ratio;
+		int H = (height - 22) / ratio; // Отнимем высоту StatusBar'а
 		if (H < 0) H = 0;
-		Frame frame_frontal(W, H, Perspective::ORTHO,
-			Matrix::Scale(2.5, 2.5, 2.5) *
-			Matrix::Translation(0, -1, -4));
-		Frame frame_profile(W, H, Perspective::ORTHO,
-			Matrix::Scale(2.5, 2.5, 2.5) *
-			Matrix::RotationY(-3.14 / 2) *
-			Matrix::Translation(0, -1, -4));
-		Frame frame_top(W, H, Perspective::ORTHO,
-			Matrix::Scale(2.5, 2.5, 2.5) *
-			Matrix::RotationX(3.14 / 2) *
-			Matrix::Translation(0, 0, -4));
-		Frame frame_multiple(W, H, currentPerspective,
-			Matrix::Scale(fig_scale, fig_scale, fig_scale) *
-			Matrix::RotationX(x_rot) *
+		Frame frame(W, H, Perspective::FRUSTUM, 
+			Matrix::RotationX(x_rot) * 
 			Matrix::RotationY(y_rot) *
-			Matrix::RotationZ(z_rot) *
-			Matrix::Translation(x_offset, y_offset, (currentPerspective != Perspective::ORTHO && currentPerspective != Perspective::FRUSTUM) ? z_offset + 4 : z_offset));
+			Matrix::Translation(0, -.5, z_offset));
 
 		Painter painter;
 
 		// Вычислим время, которое нужно затратить для рисования одного кадра
-		char repaint_time[1024];
+		char repaint_time[500];
 		DWORD t1 = GetTickCount();
-		painter.Draw(frame_frontal);
-		painter.Draw(frame_profile);
-		painter.Draw(frame_top);
-		painter.Draw(frame_multiple);
+		painter.Draw(frame);
 		sprintf_s(repaint_time, "Время перерисовки: %d миллисекунд\n", GetTickCount() - t1);
-
-		if (currentPerspective == 0) {
-			strcat_s(repaint_time, "Ортографическая проекция\nКлавиша F8 - изменить проекцию");
-		}
-		else if (currentPerspective == 1) {
-			strcat_s(repaint_time, "Перспективная проекция\nКлавиша F8 - изменить проекцию");
-		}
-		else if (currentPerspective == 2) {
-			strcat_s(repaint_time, "Изометрическая проекция\nКлавиша F8 - изменить проекцию");
-		}
-		else if (currentPerspective == 3) {
-			strcat_s(repaint_time, "Диметрическая проекция\nКлавиша F8 - изменить проекцию");
-		}
-		else if (currentPerspective == 4) {
-			strcat_s(repaint_time, "Триметрическая проекция\nКлавиша F8 - изменить проекцию");
-		}
-
-		strcat_s(repaint_time, "\nТип отображения: ");
-		if (draw_mode == (SHOW_GRID | SHOW_POLYGON)) {
-			strcat_s(repaint_time, "Сетка и грани");
-		}
-		else if (draw_mode == SHOW_GRID) {
-			strcat_s(repaint_time, "Сетка");
-		}
-		else if (draw_mode == SHOW_POLYGON) {
-			strcat_s(repaint_time, "Грани");
-		}
-		strcat_s(repaint_time, "\nКлавиша F9 - изменить отображение");
 
 		// Системная структура для хранения цвета пикселя
 		// Буфер кадра, который будет передаваться операционной системе, должен состоять из массива этих структур
@@ -202,36 +191,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 		for (int y = 0; y < H * ratio; y++)
 			for (int x = 0; x < W * ratio; x++)
 			{
-				RGBPIXEL* pixel_frontal = bitmap + (size_t)(h - y) * width + x;
-				RGBPIXEL* pixel_profile = bitmap + (size_t)(h - y) * width + x + W * ratio;
-				RGBPIXEL* pixel_top = bitmap + (size_t)(h - y + H * ratio) * width + x;
-				RGBPIXEL* pixel_multiple = bitmap + (size_t)(h - y + H * ratio) * width + x + W * ratio;
-
-				COLOR color_frontal = frame_frontal.GetPixel(x / ratio, y / ratio);
-				COLOR color_profile = frame_profile.GetPixel(x / ratio, y / ratio);
-				COLOR color_top = frame_top.GetPixel(x / ratio, y / ratio);
-				COLOR color_multiple = frame_multiple.GetPixel(x / ratio, y / ratio);
-
-				pixel_frontal->RED = color_frontal.RED;
-				pixel_frontal->GREEN = color_frontal.GREEN;
-				pixel_frontal->BLUE = color_frontal.BLUE;
-				pixel_frontal->ALPHA = color_frontal.ALPHA;
-
-				pixel_profile->RED = color_profile.RED;
-				pixel_profile->GREEN = color_profile.GREEN;
-				pixel_profile->BLUE = color_profile.BLUE;
-				pixel_profile->ALPHA = color_profile.ALPHA;
-
-				pixel_top->RED = color_top.RED;
-				pixel_top->GREEN = color_top.GREEN;
-				pixel_top->BLUE = color_top.BLUE;
-				pixel_top->ALPHA = color_top.ALPHA;
-
-				pixel_multiple->RED = color_multiple.RED;
-				pixel_multiple->GREEN = color_multiple.GREEN;
-				pixel_multiple->BLUE = color_multiple.BLUE;
-				pixel_multiple->ALPHA = color_multiple.ALPHA;
+				RGBPIXEL* pixel = bitmap + (size_t)(h - y) * width + x;
+				COLOR color = frame.GetPixel(x / ratio, y / ratio);
+				pixel->RED = color.RED;
+				pixel->GREEN = color.GREEN;
+				pixel->BLUE = color.BLUE;
+				pixel->ALPHA = color.ALPHA;
 			}
+
 
 
 		// Получить дескриптор на новое растровое изображение
@@ -255,10 +222,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			srcHdc,     // Дескриптор временного контекста
 			0, 0,       // Координаты считываемого изображения
 			SRCCOPY);   // Параметры операции - копирование 
-
 		SetBkMode(hdc, TRANSPARENT); // Цвет фона, на котором будет написан текст 
 		SetTextColor(hdc, RGB(255, 127, 40)); // Цвет текста
 		DrawTextA(hdc, repaint_time, -1, &rect, 0);
+
 
 		EndPaint(hWnd, &ps);
 
@@ -270,32 +237,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	break;
 
-	case WM_MOUSEMOVE:
-	{
-		char str[512];
-
-		// Устанавливаем текст в разных частях StatusBar'а
-		// Экранные координаты курсора мыши
-		sprintf_s(str, "X = %.2f (W/S), Y = %.2f (E/Q), Z = %.2f (A/D), Pitch (X Roll) = %.2f (R/F), Yaw (Y Roll) = %.2f (T/G), Roll (Z Roll) = %.2f (Y/H), Scale = %.2f (U/J)",
-			x_offset, y_offset, z_offset, x_rot, y_rot, z_rot, fig_scale);
-		SendMessageA(hWndStatusBar, SB_SETTEXTA, 2, (LPARAM)str);
-
-		sprintf_s(str, "X = %d, Y = %d", LOWORD(lParam), HIWORD(lParam));
-		SendMessageA(hWndStatusBar, SB_SETTEXTA, 1, (LPARAM)str);
-
-		sprintf_s(str, "Разрешение (F2/F3): %d", pixelSize);
-		SendMessageA(hWndStatusBar, SB_SETTEXTA, 0, (LPARAM)str);
-	}
-	break;
-
 	case WM_MOUSEWHEEL:
 	{
 		auto wheeldata = GET_WHEEL_DELTA_WPARAM(wParam);
-		if (wheeldata > 0 && scale < 0.5) {
-			scale += 0.01;
+		if (wheeldata > 0) {
+			z_offset += 0.01;
 		}
-		else if (wheeldata < 0 && scale > 0) {
-			scale -= 0.01;
+		else if (wheeldata < 0) {
+			z_offset -= 0.01;
 		}
 		// Перерисовать окно
 		InvalidateRect(hWnd, NULL, false);
@@ -303,15 +252,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	break;
 
 	case WM_KEYDOWN:
-		if (wParam == VK_F8)
-		{
-			currentPerspective = static_cast<Perspective>((currentPerspective + 1) % PerspectiveSize);
-		}
-
-		if (wParam == VK_F9) {
-			draw_mode = draw_mode % 3 + 1;
-		}
-
 		if (wParam == VK_F2 || wParam == VK_F3)
 		{
 			if (pixelSize > 1 && wParam == VK_F2) pixelSize--;
@@ -329,61 +269,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			MessageBoxA(hWnd, "Работу выполнил студент группы ПВ-223 Пахомов В. А.", "О программе", MB_ICONINFORMATION);
 		}
 		break;
-
-	case WM_CHAR:
-	{
-		if (wParam == 'q' || wParam == 'Q') {
-			y_offset -= OFFSET_DELTA;
-		}
-		if (wParam == 'a' || wParam == 'A') {
-			z_offset += OFFSET_DELTA;
-		}
-		if (wParam == 'w' || wParam == 'W') {
-			x_offset -= OFFSET_DELTA;
-		}
-		if (wParam == 's' || wParam == 'S') {
-			x_offset += OFFSET_DELTA;
-		}
-		if (wParam == 'e' || wParam == 'E') {
-			y_offset += OFFSET_DELTA;
-		}
-		if (wParam == 'd' || wParam == 'D') {
-			z_offset -= OFFSET_DELTA;
-		}
-		if (wParam == 'r' || wParam == 'R') {
-			x_rot += OFFSET_DELTA;
-		}
-		if (wParam == 'f' || wParam == 'Ff') {
-			x_rot -= OFFSET_DELTA;
-		}
-		if (wParam == 't' || wParam == 'T') {
-			y_rot += OFFSET_DELTA;
-		}
-		if (wParam == 'g' || wParam == 'G') {
-			y_rot -= OFFSET_DELTA;
-		}
-		if (wParam == 'y' || wParam == 'Y') {
-			z_rot += OFFSET_DELTA;
-		}
-		if (wParam == 'h' || wParam == 'H') {
-			z_rot -= OFFSET_DELTA;
-		}
-		if (wParam == 'u' || wParam == 'U') {
-			fig_scale += OFFSET_DELTA;
-		}
-		if (wParam == 'j' || wParam == 'J') {
-			fig_scale -= OFFSET_DELTA;
-		}
-
-		char str[512];
-
-		// Устанавливаем текст в разных частях StatusBar'а
-		// Экранные координаты курсора мыши
-		sprintf_s(str, "X = %.2f (W/S), Y = %.2f (E/Q), Z = %.2f (A/D), Pitch (X Roll) = %.2f (R/F), Yaw (Y Roll) = %.2f (T/G), Roll (Z Roll) = %.2f (Y/H), Scale = %.2f (U/J)",
-			x_offset, y_offset, z_offset, x_rot, y_rot, z_rot, fig_scale);
-		SendMessageA(hWndStatusBar, SB_SETTEXTA, 2, (LPARAM)str);
-		break;
-	}
 	// Обработка сообщения на изменение размера окна
 	case WM_SIZE:
 

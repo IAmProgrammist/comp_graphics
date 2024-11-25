@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{81D2DCF3-B1E2-4830-9E03-68C2D7D50373}</ProjectGuid>
+    <ProjectGuid>{0B9D4ABC-9BDA-415E-878E-ECE953C121A1}</ProjectGuid>
     <RootNamespace>lab_5_painter_algorithm</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>lab_5_painter_algorithm</ProjectName>
