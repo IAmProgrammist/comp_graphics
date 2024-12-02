@@ -3,6 +3,7 @@
 #include <vector>
 #include <tuple>
 #include "Vector.h"
+#include "Shaders.h"
 
 
 // Возвращает точки объекта
@@ -48,18 +49,18 @@ const std::vector<Vector> get_points(float scale_factor = 1.) {
 // Задаёт индексы точек для формирования полигонов
 std::vector<std::tuple<int, int, int>> polygons = {
 	// Вершина рукоятки
-	{0, 1, 2},
-	{3, 1, 2},
-
+	{0, 1, 2},   // 0
+	{3, 1, 2},   // 1
+	
 	// Стенки рукоятки
-	{0, 1, 5},
-	{1, 5, 7},
-	{1, 3, 7},
-	{3, 7, 6},
-	{3, 2, 6},
-	{2, 6, 4},
-	{2, 0, 4},
-	{0, 4, 5},
+	{0, 1, 5},   // 2
+	{1, 5, 7},   // 3
+	{1, 3, 7},   // 4
+	{3, 7, 6},   // 5
+	{3, 2, 6},   // 6
+	{2, 6, 4},   // 7
+	{2, 0, 4},   // 8
+	{0, 4, 5},   // 9
 
 	// Нижняя часть рукоятки
 	{5, 4, 9},
@@ -100,45 +101,49 @@ std::vector<std::tuple<int, int, int>> polygons = {
 	{17, 19, 20}
 };
 
-std::vector<COLOR> materials = {
-	{132, 39, 75},
-	{126, 142, 215},
-	{98, 82, 154},
-	{142, 132, 211},
-	{97, 103, 222},
-	{70, 93, 36},
-	{62, 122, 190},
-	{83, 57, 98},
-	{148, 167, 154},
-	{111, 115, 224},
-	{175, 218, 20},
-	{168, 178, 84},
-	{40, 168, 153},
-	{132, 46, 214},
-	{105, 215, 86},
-	{109, 183, 95},
-	{64, 121, 201},
-	{141, 185, 103},
-	{88, 116, 207},
-	{42, 205, 195},
-	{143, 190, 44},
-	{218, 156, 52},
-	{205, 68, 192},
-	{61, 68, 142},
-	{96, 129, 219},
-	{196, 61, 81},
-	{139, 69, 110},
-	{205, 210, 134},
-	{184, 158, 46},
-	{225, 131, 143},
-	{168, 156, 159},
-	{143, 67, 152},
-	{160, 210, 114},
-	{125, 75, 154},
-	{32, 191, 21},
-	{73, 216, 93},
-	{112, 113, 173},
-	{146, 211, 170}
+std::vector<BaseShader*> materials = {
+	new CheckmateShader({0, 0, 0}, {1, 0, 0}, {0, 0, 1}),
+	new CheckmateShader({1, 0, 1}, {1, 0, 0}, {0, 0, 1}),
+
+	new ColorShader({98, 82, 154, 120}),
+	new ColorShader({142, 132, 211, 120}),
+	new ColorShader({97, 103, 222, 120}),
+	new ColorShader({70, 93, 36, 120}),
+	new ColorShader({62, 122, 190, 120}),
+	new ColorShader({83, 57, 98, 120}),
+	new ColorShader({148, 167, 154, 120}),
+	new ColorShader({111, 115, 224, 120}),
+
+	new ColorShader({175, 218, 20}),
+	new ColorShader({168, 178, 84}),
+	new ColorShader({40, 168, 153}),
+	new ColorShader({132, 46, 214}),
+	new ColorShader({105, 215, 86}),
+	new ColorShader({109, 183, 95}),
+	new ColorShader({64, 121, 201}),
+	new ColorShader({141, 185, 103}),
+
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({255, 40, 0, 200})
 };
 
 /*const std::vector<Vector> get_points(float scale_factor = 1.) {

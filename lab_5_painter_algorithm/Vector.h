@@ -7,13 +7,13 @@ class Vector
 {
  public:
   
-  float x, y, z, w;
+  double x, y, z, w;
 
   Vector() : x(0), y(0), z(0), w(1.0f)
   {
   }
   
-  Vector(float _x, float _y, float _z, float _w = 1.0f) : x(_x), y(_y), z(_z), w(_w)
+  Vector(double _x, double _y, double _z, double _w = 1.0f) : x(_x), y(_y), z(_z), w(_w)
   {
   }
 
