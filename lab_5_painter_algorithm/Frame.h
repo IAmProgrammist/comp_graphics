@@ -294,7 +294,9 @@ public:
 		if (!(drawMode & SHOW_POLYGON))
 			return;
 
-		int swap_amount = 0;
+		bool swap_y1_y0_first = false;
+		bool swap_y2_y1 = false;
+		bool swap_y1_y0_second = false;
 
 		// Отсортируем точки таким образом, чтобы выполнилось условие: y0 < y1 < y2
 		if (y1 < y0)
@@ -303,7 +305,7 @@ public:
 			std::swap(y1, y0);
 			std::swap(z1, z0);
 			std::swap(w1, w0);
-			swap_amount++;
+			swap_y1_y0_first = true;
 		}
 		if (y2 < y1)
 		{
@@ -311,7 +313,7 @@ public:
 			std::swap(y2, y1);
 			std::swap(z2, z1);
 			std::swap(w2, w1);
-			swap_amount++;
+			swap_y2_y1 = true;
 		}
 		if (y1 < y0)
 		{
@@ -319,7 +321,7 @@ public:
 			std::swap(y1, y0);
 			std::swap(z1, z0);
 			std::swap(w1, w0);
-			swap_amount++;
+			swap_y1_y0_second = true;
 		}
 
 		// Определяем номера строк пикселей, в которых располагаются точки треугольника
@@ -383,13 +385,13 @@ public:
 					//float zmax = 0.8, zmin = 0.1;
 					//color = COLOR(255 - (Z - zmin) / (zmax - zmin) * 255, 100, 100);
 				    //color = COLOR((2.5 - Z) / 4 * 255, 0, 0);
-					if (swap_amount > 2) {
+					if (swap_y1_y0_second) {
 						std::swap(h0, h1);
 					}
-					if (swap_amount > 1) {
+					if (swap_y2_y1) {
 						std::swap(h1, h2);
 					}
-					if (swap_amount > 0) {
+					if (swap_y1_y0_first) {
 						std::swap(h0, h1);
 					}
 
@@ -443,13 +445,13 @@ public:
 				PIXEL* pixel = pixels + (size_t)Y * width + X;
 				if (Z > -1 && Z < 1/* && Z < pixel->Z*/)
 				{
-					if (swap_amount > 2) {
+					if (swap_y1_y0_second) {
 						std::swap(h0, h1);
 					}
-					if (swap_amount > 1) {
+					if (swap_y2_y1) {
 						std::swap(h1, h2);
 					}
-					if (swap_amount > 0) {
+					if (swap_y1_y0_first) {
 						std::swap(h0, h1);
 					}
 					//float zmax = 0.8, zmin = 0.1;

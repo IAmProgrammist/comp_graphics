@@ -102,8 +102,8 @@ std::vector<std::tuple<int, int, int>> polygons = {
 };
 
 std::vector<BaseShader*> materials = {
-	new CheckmateShader({0, 0, 0}, {1, 0, 0}, {0, 0, 1}),
-	new CheckmateShader({1, 0, 1}, {1, 0, 0}, {0, 0, 1}),
+	new DottedShader({0, 0, 0}, {1, 0, 0}, {0, 0, 1}),
+	new DottedShader({1, 0, 1}, {1, 0, 0}, {0, 0, 1}),
 
 	new ColorShader({98, 82, 154, 120}),
 	new ColorShader({142, 132, 211, 120}),
@@ -123,27 +123,27 @@ std::vector<BaseShader*> materials = {
 	new ColorShader({64, 121, 201}),
 	new ColorShader({141, 185, 103}),
 
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
+	new ColorShader({240, 240, 0, 255}),
+	new ColorShader({240, 0, 240, 255}),
+	new ColorShader({0, 240, 240, 255}),
+	new ColorShader({240, 240, 240, 255}),
+	new ColorShader({200, 200, 0, 200}),
+	new ColorShader({200, 0, 200, 200}),
+	new ColorShader({0, 200, 200, 200}),
+	new ColorShader({200, 200, 200, 200}),
+	new ColorShader({125, 240, 0, 255}),
+	new ColorShader({240, 0, 125, 255}),
+	new ColorShader({0, 125, 240, 255}),
+	new ColorShader({240, 125, 125, 255}),
+	new ColorShader({240, 64, 0, 200}),
+	new ColorShader({64, 0, 240, 200}),
+	new ColorShader({0, 240, 64, 200}),
+	new ColorShader({64, 240, 240, 200}),
 
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200}),
-	new ColorShader({255, 40, 0, 200})
+	new ColorShader({40, 40, 40, 240}),
+	new ColorShader({40, 40, 40, 240}),
+	new ColorShader({40, 40, 40, 240}),
+	new ColorShader({40, 40, 40, 240})
 };
 
 /*const std::vector<Vector> get_points(float scale_factor = 1.) {

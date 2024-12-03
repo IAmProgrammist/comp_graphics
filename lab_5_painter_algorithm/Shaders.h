@@ -49,3 +49,32 @@ public:
 		return Vector();
 	}
 };
+
+class DottedShader : public BaseShader {
+	Vector A, B, C;
+
+public:
+	DottedShader(Vector A, Vector B, Vector C) : A(A), B(B), C(C) {}
+
+	COLOR main(Vector data) {
+		double x_factor = fmod(data.x, 0.2) * 5;
+		double z_factor = fmod(data.z, 0.2) * 5;
+
+		if (pow(x_factor - 0.5, 2) + pow(z_factor - 0.5, 2) < 0.25 * 0.25) {
+			return { 255, 255, 255 };
+		}
+		else {
+			return { 255, 0, 0, 100};
+		}
+	}
+
+	Vector getVertexData(double h0, double h1, double h2) {
+		Vector result = {
+			A.x * h0 + B.x * h1 + C.x * h2,
+			A.y * h0 + B.y * h1 + C.y * h2,
+			A.z * h0 + B.z * h1 + C.z * h2
+		};
+
+		return result;
+	}
+};
