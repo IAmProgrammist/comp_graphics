@@ -36,9 +36,8 @@ public:
 };
 
 class ColorShader : public BaseShader {
-	COLOR base;
-
 public:
+	COLOR base;
 	ColorShader(COLOR base) : base(base) {}
 
 	COLOR main(Vector data) {
@@ -64,7 +63,7 @@ public:
 			return { 255, 255, 255 };
 		}
 		else {
-			return { 255, 0, 0, 100};
+			return { 255, 0, 0, 255};
 		}
 	}
 

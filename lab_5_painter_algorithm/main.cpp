@@ -106,6 +106,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 	break;
 
+	case WM_RBUTTONDOWN: {
+		regen_transparencies();
+	}
+
 	case WM_LBUTTONUP:
 	{
 		lmbPressed = false;

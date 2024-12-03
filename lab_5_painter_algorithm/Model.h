@@ -146,6 +146,20 @@ std::vector<BaseShader*> materials = {
 	new ColorShader({40, 40, 40, 240})
 };
 
+void regen_transparencies() {
+	for (int i = 2; i < materials.size(); i++) {
+		((ColorShader*)materials[i])->base.RED = rand() % 256;
+		((ColorShader*)materials[i])->base.GREEN = rand() % 256;
+		((ColorShader*)materials[i])->base.BLUE = rand() % 256;
+		if (rand() & 1) {
+			((ColorShader*)materials[i])->base.ALPHA = 20 + rand() % 120;
+		}
+		else {
+			((ColorShader*)materials[i])->base.ALPHA = 255;
+		}
+	}
+}
+
 /*const std::vector<Vector> get_points(float scale_factor = 1.) {
 	std::vector<Vector> result = {
 		{0, 0, 0},
