@@ -140,9 +140,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ingridients\glad\src\glad.c" />
+    <ClCompile Include="ingridients\texture.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ingridients\cookbookogl.h" />
+    <ClInclude Include="ingridients\glad\include\glad\glad.h" />
+    <ClInclude Include="ingridients\glad\include\KHR\khrplatform.h" />
+    <ClInclude Include="ingridients\stb\stb_image.h" />
+    <ClInclude Include="ingridients\texture.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Painter.h" />
     <ClInclude Include="Vertex.h" />

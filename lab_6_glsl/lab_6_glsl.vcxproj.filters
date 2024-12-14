@@ -2,11 +2,32 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ingridients\texture.cpp">
+      <Filter>ingridients</Filter>
+    </ClCompile>
+    <ClCompile Include="ingridients\glad\src\glad.c">
+      <Filter>ingridients\glad\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Painter.h" />
     <ClInclude Include="Vertex.h" />
+    <ClInclude Include="ingridients\texture.h">
+      <Filter>ingridients</Filter>
+    </ClInclude>
+    <ClInclude Include="ingridients\cookbookogl.h">
+      <Filter>ingridients</Filter>
+    </ClInclude>
+    <ClInclude Include="ingridients\stb\stb_image.h">
+      <Filter>ingridients\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="ingridients\glad\include\glad\glad.h">
+      <Filter>ingridients\glad\include\glad</Filter>
+    </ClInclude>
+    <ClInclude Include="ingridients\glad\include\KHR\khrplatform.h">
+      <Filter>ingridients\glad\include\KHR</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="opengl_error.log" />
@@ -14,6 +35,27 @@
   <ItemGroup>
     <Filter Include="shaders">
       <UniqueIdentifier>{1b1bceee-d92d-4194-8c8c-3223a987e3a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ingridients">
+      <UniqueIdentifier>{0f8366da-9328-4686-86a8-50987f8497b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ingridients\stb">
+      <UniqueIdentifier>{447c12ba-3a58-4290-89ec-0112abba2264}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ingridients\glad">
+      <UniqueIdentifier>{e789d3d6-e841-41d7-9167-c9740938f29b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ingridients\glad\include">
+      <UniqueIdentifier>{006fb97d-1214-46d7-97cc-1b480f24414f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ingridients\glad\src">
+      <UniqueIdentifier>{dbbc0eeb-ae2a-42cf-9755-bfd5a2df0efd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ingridients\glad\include\glad">
+      <UniqueIdentifier>{b19bbc12-bac0-41fd-98bd-bfea075a766b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ingridients\glad\include\KHR">
+      <UniqueIdentifier>{d799cf7b-8631-4fc3-8c99-62c31a6bef9e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
