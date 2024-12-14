@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.35425.106
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33627.172
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lab_1_basics", "lab_1_basics\lab_1_basics.vcxproj", "{B50F9F47-C72C-443F-A494-D5DC138A1468}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lab_4_affine_3d_simple_cube", "lab_4_affine_3d_simple_cube\lab_4_affine_3d_simple_cube.vcxproj", "{81D2DCF3-B1E2-4830-9E03-68C2D7D50373}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lab_5_painter_algorithm", "lab_5_painter_algorithm\lab_5_painter_algorithm.vcxproj", "{0B9D4ABC-9BDA-415E-878E-ECE953C121A1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lab_6_glsl", "lab_6_glsl\lab_6_glsl.vcxproj", "{8B529406-F7B3-4E1F-BDE8-A636DA18B428}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +63,14 @@ Global
 		{0B9D4ABC-9BDA-415E-878E-ECE953C121A1}.Release|x64.Build.0 = Release|x64
 		{0B9D4ABC-9BDA-415E-878E-ECE953C121A1}.Release|x86.ActiveCfg = Release|Win32
 		{0B9D4ABC-9BDA-415E-878E-ECE953C121A1}.Release|x86.Build.0 = Release|Win32
+		{8B529406-F7B3-4E1F-BDE8-A636DA18B428}.Debug|x64.ActiveCfg = Debug|x64
+		{8B529406-F7B3-4E1F-BDE8-A636DA18B428}.Debug|x64.Build.0 = Debug|x64
+		{8B529406-F7B3-4E1F-BDE8-A636DA18B428}.Debug|x86.ActiveCfg = Debug|Win32
+		{8B529406-F7B3-4E1F-BDE8-A636DA18B428}.Debug|x86.Build.0 = Debug|Win32
+		{8B529406-F7B3-4E1F-BDE8-A636DA18B428}.Release|x64.ActiveCfg = Release|x64
+		{8B529406-F7B3-4E1F-BDE8-A636DA18B428}.Release|x64.Build.0 = Release|x64
+		{8B529406-F7B3-4E1F-BDE8-A636DA18B428}.Release|x86.ActiveCfg = Release|Win32
+		{8B529406-F7B3-4E1F-BDE8-A636DA18B428}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
