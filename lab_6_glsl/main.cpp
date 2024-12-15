@@ -1,10 +1,12 @@
-// main.cpp : Определяет точку входа для приложения.
-
+// main.cpp : РћРїСЂРµРґРµР»СЏРµС‚ С‚РѕС‡РєСѓ РІС…РѕРґР° РґР»СЏ РїСЂРёР»РѕР¶РµРЅРёСЏ.
 #include <Windows.h>
+#include <MMSystem.h>
 #include <commctrl.h>
 #include "Painter.h"
 
 #include "gl/gl.h"
+#include "AudioFile.h"
+#include <fftw3.h>
 
 #include <iostream>
 
@@ -17,117 +19,72 @@
 #endif
 
 
-// Каркасное Windows-приложение с использованием библиотеки OpenGL
+// РљР°СЂРєР°СЃРЅРѕРµ Windows-РїСЂРёР»РѕР¶РµРЅРёРµ СЃ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµРј Р±РёР±Р»РёРѕС‚РµРєРё OpenGL
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 
-HWND hWndStatusBar; // Дескриптор компонента StatusBar
+HWND hWndStatusBar; // Р”РµСЃРєСЂРёРїС‚РѕСЂ РєРѕРјРїРѕРЅРµРЅС‚Р° StatusBar
 
-HGLRC hglrc; // Контекст OpenGL 
+HGLRC hglrc; // РљРѕРЅС‚РµРєСЃС‚ OpenGL 
 
-// Создание консоли для вывода сообщений об ошибках
+// РЎРѕР·РґР°РЅРёРµ РєРѕРЅСЃРѕР»Рё РґР»СЏ РІС‹РІРѕРґР° СЃРѕРѕР±С‰РµРЅРёР№ РѕР± РѕС€РёР±РєР°С…
 void CreateLogConsole(void)
 {
-    // Создадим консоль и перенаправим в неё стандартный поток ошибок
+    // РЎРѕР·РґР°РґРёРј РєРѕРЅСЃРѕР»СЊ Рё РїРµСЂРµРЅР°РїСЂР°РІРёРј РІ РЅРµС‘ СЃС‚Р°РЅРґР°СЂС‚РЅС‹Р№ РїРѕС‚РѕРє РѕС€РёР±РѕРє
     AllocConsole();
     
-    // Меняем кодовую страницу на 1251 для поддержки кириллицы
+    // РњРµРЅСЏРµРј РєРѕРґРѕРІСѓСЋ СЃС‚СЂР°РЅРёС†Сѓ РЅР° 1251 РґР»СЏ РїРѕРґРґРµСЂР¶РєРё РєРёСЂРёР»Р»РёС†С‹
     SetConsoleOutputCP(1251);
     SetConsoleCP(1251);
 
-    // Устанавливаем шрифт консоли на Consolas или другой шрифт, поддерживающий кириллицу
+    // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С€СЂРёС„С‚ РєРѕРЅСЃРѕР»Рё РЅР° Consolas РёР»Рё РґСЂСѓРіРѕР№ С€СЂРёС„С‚, РїРѕРґРґРµСЂР¶РёРІР°СЋС‰РёР№ РєРёСЂРёР»Р»РёС†Сѓ
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-   /* CONSOLE_FONT_INFOEX cfi;
-    cfi.cbSize = sizeof(cfi);
-    GetCurrentConsoleFontEx(hConsole, FALSE, &cfi);
-    cfi.FontFamily = FF_DONTCARE;
-    cfi.FontWeight = FW_NORMAL;
-    wcscpy_s(cfi.FaceName, L"Consolas");
-    SetCurrentConsoleFontEx(hConsole, FALSE, &cfi);*/
-
-    // Меняем цвет текста на красный
+    // РњРµРЅСЏРµРј С†РІРµС‚ С‚РµРєСЃС‚Р° РЅР° РєСЂР°СЃРЅС‹Р№
     SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
 
-    // Перенаправляем потоки stderr и stdout в консоль
     FILE* stream;
-    freopen_s(&stream, "CONOUT$", "w", stderr);  // Перенаправление потока stderr
-    freopen_s(&stream, "CONOUT$", "w", stdout);  // Перенаправление потока stdout
-
-    //system("chcp 1251"); // Настраиваем кодировку консоли
-    /*
-#ifdef _MSC_VER // Если программа компилируется в MSVC 
-
-    // Перенаправление стандартного потока вывода в окно вывода Visual Studio
-    // https://gist.github.com/takashyx/937f3a794ad36cd98ec3
-    class debugStreambuf : public std::streambuf  {
-    public:
-        virtual int_type overflow(int_type c = EOF) override {
-            if (c != EOF) {
-                TCHAR buf[] = { c, '\0' };
-                OutputDebugString(buf);
-            }
-            return c;
-        }
-    };
-
-
-    class Cout2VisualStudioDebugOutput {
-
-        debugStreambuf dbgstream;
-        std::streambuf* default_stream;
-
-    public:
-        Cout2VisualStudioDebugOutput() {
-            default_stream = std::cerr.rdbuf(&dbgstream);
-        }
-
-        ~Cout2VisualStudioDebugOutput() {
-            std::cerr.rdbuf(default_stream);
-        }
-    };
-
-    Cout2VisualStudioDebugOutput* c2v = new Cout2VisualStudioDebugOutput();
-
-    //std::cerr << "Standart Error write!" << std::endl;
-   
-#endif*/
+    freopen_s(&stream, "CONOUT$", "w", stderr);  
+    freopen_s(&stream, "CONOUT$", "w", stdout); 
 }
 
 int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs, int nWinMode)
 {
-    char szWinName[] = "Graphics Window Class"; // Имя класса окна
+    textureTile = BMP("C:\\Users\\vladi\\Workspace\\C++\\comp_graphics\\x64\\Debug\\assets\\tile.bmp");
+    textureBackground = BMP("C:\\Users\\vladi\\Workspace\\C++\\comp_graphics\\x64\\Debug\\assets\\stars.bmp");
 
-    HWND hWnd; // Дескриптор главного окна
+    char szWinName[] = "Graphics Window Class"; // РРјСЏ РєР»Р°СЃСЃР° РѕРєРЅР°
 
-    WNDCLASSA wcl; // Определитель класса окна
-    wcl.hInstance = hThisInstance; // Дескриптор приложения
-    wcl.lpszClassName = szWinName;// Имя класса окна
-    wcl.lpfnWndProc = WindowProc; // Функция обработки сообщений
-    wcl.style = 0; // Стиль по умолчанию
-    wcl.hIcon = LoadIcon(NULL, IDI_APPLICATION);// Иконка
-    wcl.hCursor = LoadCursor(NULL, IDC_ARROW); // Курсор
-    wcl.lpszMenuName = NULL; // Без меню
-    wcl.cbClsExtra = 0; // Без дополнительной информации
+    HWND hWnd; // Р”РµСЃРєСЂРёРїС‚РѕСЂ РіР»Р°РІРЅРѕРіРѕ РѕРєРЅР°
+
+    WNDCLASSA wcl; // РћРїСЂРµРґРµР»РёС‚РµР»СЊ РєР»Р°СЃСЃР° РѕРєРЅР°
+    wcl.hInstance = hThisInstance; // Р”РµСЃРєСЂРёРїС‚РѕСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ
+    wcl.lpszClassName = szWinName;// РРјСЏ РєР»Р°СЃСЃР° РѕРєРЅР°
+    wcl.lpfnWndProc = WindowProc; // Р¤СѓРЅРєС†РёСЏ РѕР±СЂР°Р±РѕС‚РєРё СЃРѕРѕР±С‰РµРЅРёР№
+    wcl.style = 0; // РЎС‚РёР»СЊ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+    wcl.hIcon = LoadIcon(NULL, IDI_APPLICATION);// РРєРѕРЅРєР°
+    wcl.hCursor = LoadCursor(NULL, IDC_ARROW); // РљСѓСЂСЃРѕСЂ
+    wcl.lpszMenuName = NULL; // Р‘РµР· РјРµРЅСЋ
+    wcl.cbClsExtra = 0; // Р‘РµР· РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕР№ РёРЅС„РѕСЂРјР°С†РёРё
     wcl.cbWndExtra = 0;
 
-    wcl.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH); //Белый фон
+    wcl.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH); //Р‘РµР»С‹Р№ С„РѕРЅ
 
-    if (!RegisterClassA(&wcl)) // Регистрируем класс окна
+    if (!RegisterClassA(&wcl)) // Р РµРіРёСЃС‚СЂРёСЂСѓРµРј РєР»Р°СЃСЃ РѕРєРЅР°
         return 0;
 
-    hWnd = CreateWindowA(szWinName, // Создать окно
-        "Лабораторная работа №6. Каркасное приложение на OpenGL",
-        WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, // Стиль окна
-        CW_USEDEFAULT, // x-координата
-        CW_USEDEFAULT, // y-координата
-        CW_USEDEFAULT, // Ширина
-        CW_USEDEFAULT, // Высота
-        HWND_DESKTOP, // Без родительского окна
-        NULL, // Без меню
-        hThisInstance, // Дескриптор приложения
-        NULL); // Без дополнительных аргументов
+    hWnd = CreateWindowA(szWinName, // РЎРѕР·РґР°С‚СЊ РѕРєРЅРѕ
+        "Р›Р°Р±РѕСЂР°С‚РѕСЂРЅР°СЏ СЂР°Р±РѕС‚Р° в„–6. РљР°СЂРєР°СЃРЅРѕРµ РїСЂРёР»РѕР¶РµРЅРёРµ РЅР° OpenGL",
+        WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, // РЎС‚РёР»СЊ РѕРєРЅР°
+        CW_USEDEFAULT, // x-РєРѕРѕСЂРґРёРЅР°С‚Р°
+        CW_USEDEFAULT, // y-РєРѕРѕСЂРґРёРЅР°С‚Р°
+        CW_USEDEFAULT, // РЁРёСЂРёРЅР°
+        CW_USEDEFAULT, // Р’С‹СЃРѕС‚Р°
+        HWND_DESKTOP, // Р‘РµР· СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РѕРєРЅР°
+        NULL, // Р‘РµР· РјРµРЅСЋ
+        hThisInstance, // Р”РµСЃРєСЂРёРїС‚РѕСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ
+        NULL); // Р‘РµР· РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹С… Р°СЂРіСѓРјРµРЅС‚РѕРІ
 
-    // Создаём компонент типа StatusBar
+    // РЎРѕР·РґР°С‘Рј РєРѕРјРїРѕРЅРµРЅС‚ С‚РёРїР° StatusBar
     hWndStatusBar = CreateWindowExA(
         0, STATUSCLASSNAMEA, NULL,
         WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
@@ -136,21 +93,21 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs,
         hThisInstance, NULL
     );
 
-    // Настройка частей StatusBar'а
+    // РќР°СЃС‚СЂРѕР№РєР° С‡Р°СЃС‚РµР№ StatusBar'Р°
     int statwidths[] = { 150, 300, -1 };
     SendMessageA(hWndStatusBar, SB_SETPARTS, sizeof(statwidths) / sizeof(int), (LPARAM)statwidths);
 
-    ShowWindow(hWnd, nWinMode); // Показать окно
+    ShowWindow(hWnd, nWinMode); // РџРѕРєР°Р·Р°С‚СЊ РѕРєРЅРѕ
 
-    setvbuf(stderr, NULL, _IONBF, 0); // Отключение буферизации потока ошибок stderr для того, чтобы лог-файл, в который выводится этот поток обновлялся сразу
+    setvbuf(stderr, NULL, _IONBF, 0); // РћС‚РєР»СЋС‡РµРЅРёРµ Р±СѓС„РµСЂРёР·Р°С†РёРё РїРѕС‚РѕРєР° РѕС€РёР±РѕРє stderr РґР»СЏ С‚РѕРіРѕ, С‡С‚РѕР±С‹ Р»РѕРі-С„Р°Р№Р», РІ РєРѕС‚РѕСЂС‹Р№ РІС‹РІРѕРґРёС‚СЃСЏ СЌС‚РѕС‚ РїРѕС‚РѕРє РѕР±РЅРѕРІР»СЏР»СЃСЏ СЃСЂР°Р·Сѓ
     
-    // Создание консоли
+    // РЎРѕР·РґР°РЅРёРµ РєРѕРЅСЃРѕР»Рё
     //CreateLogConsole();
     
-    // Получение контекста устройства отображения
+    // РџРѕР»СѓС‡РµРЅРёРµ РєРѕРЅС‚РµРєСЃС‚Р° СѓСЃС‚СЂРѕР№СЃС‚РІР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
     HDC hdc = GetDC(hWnd);
 
-    // Установка формата пикселей
+    // РЈСЃС‚Р°РЅРѕРІРєР° С„РѕСЂРјР°С‚Р° РїРёРєСЃРµР»РµР№
     PIXELFORMATDESCRIPTOR pfd = {};
     pfd.nSize = sizeof(pfd);
     pfd.nVersion = 1;
@@ -163,24 +120,30 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs,
 
     SetPixelFormat(hdc, pixelFormat, &pfd);
 
-    // Создание контекста OpenGL
+    // РЎРѕР·РґР°РЅРёРµ РєРѕРЅС‚РµРєСЃС‚Р° OpenGL
     hglrc = wglCreateContext(hdc);
 
     wglMakeCurrent(hdc, hglrc);
 
-    // Инициализация библиотеки GLEW
+    // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±РёР±Р»РёРѕС‚РµРєРё GLEW
     glewInit();
 
-    // Инициализация OpenGL
+    // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ OpenGL
     InitOpenGL();
 
-    UpdateWindow(hWnd); // Перерисовать окно
+    UpdateWindow(hWnd); // РџРµСЂРµСЂРёСЃРѕРІР°С‚СЊ РѕРєРЅРѕ
+
+    audioFile.load("C:/Users/vladi/Downloads/Daft-Punk-Touch.wav");
+    PlaySound(L"C:/Users/vladi/Downloads/Daft-Punk-Touch.wav", hThisInstance, SND_FILENAME | SND_ASYNC);
+
+    begin_time = GetTickCount();
+    last_time = begin_time;
 
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0)) // Запустить цикл обработки сообщений
+    while (GetMessage(&msg, NULL, 0, 0)) // Р—Р°РїСѓСЃС‚РёС‚СЊ С†РёРєР» РѕР±СЂР°Р±РѕС‚РєРё СЃРѕРѕР±С‰РµРЅРёР№
     { 
-        TranslateMessage(&msg); // Разрешить использование клавиатуры
-        DispatchMessage(&msg); // Вернуть управление операционной системе Windows
+        TranslateMessage(&msg); // Р Р°Р·СЂРµС€РёС‚СЊ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РєР»Р°РІРёР°С‚СѓСЂС‹
+        DispatchMessage(&msg); // Р’РµСЂРЅСѓС‚СЊ СѓРїСЂР°РІР»РµРЅРёРµ РѕРїРµСЂР°С†РёРѕРЅРЅРѕР№ СЃРёСЃС‚РµРјРµ Windows
     }
 
     return (int) msg.wParam;
@@ -188,65 +151,66 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs,
 }
 
 
-// Следующая функция вызывается операционной системой Windows и получает в качестве
-// параметров сообщения из очереди сообщений данного приложения
+// РЎР»РµРґСѓСЋС‰Р°СЏ С„СѓРЅРєС†РёСЏ РІС‹Р·С‹РІР°РµС‚СЃСЏ РѕРїРµСЂР°С†РёРѕРЅРЅРѕР№ СЃРёСЃС‚РµРјРѕР№ Windows Рё РїРѕР»СѓС‡Р°РµС‚ РІ РєР°С‡РµСЃС‚РІРµ
+// РїР°СЂР°РјРµС‚СЂРѕРІ СЃРѕРѕР±С‰РµРЅРёСЏ РёР· РѕС‡РµСЂРµРґРё СЃРѕРѕР±С‰РµРЅРёР№ РґР°РЅРЅРѕРіРѕ РїСЂРёР»РѕР¶РµРЅРёСЏ
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static DWORD start_time; // Начальный момент запуска программы
+    static DWORD start_time; // РќР°С‡Р°Р»СЊРЅС‹Р№ РјРѕРјРµРЅС‚ Р·Р°РїСѓСЃРєР° РїСЂРѕРіСЂР°РјРјС‹
 
     switch (message)
     {
-        // Обработка сообщения на создание окна
+        // РћР±СЂР°Р±РѕС‚РєР° СЃРѕРѕР±С‰РµРЅРёСЏ РЅР° СЃРѕР·РґР°РЅРёРµ РѕРєРЅР°
         case WM_CREATE:
         {
-            // Создаем таймер, посылающий сообщения
-            // функции окна примерно 30 раз в секунду
-            SetTimer(hWnd, 1, 1000/30, NULL);
+            // РЎРѕР·РґР°РµРј С‚Р°Р№РјРµСЂ, РїРѕСЃС‹Р»Р°СЋС‰РёР№ СЃРѕРѕР±С‰РµРЅРёСЏ
+            // С„СѓРЅРєС†РёРё РѕРєРЅР° РїСЂРёРјРµСЂРЅРѕ 30 СЂР°Р· РІ СЃРµРєСѓРЅРґСѓ
+            SetTimer(hWnd, 1, 1000/170, NULL);
 
             start_time = GetTickCount();
+            running_time = start_time;
         }
         break;
 
 
-        // Обработка сообщения на перерисовку окна
+        // РћР±СЂР°Р±РѕС‚РєР° СЃРѕРѕР±С‰РµРЅРёСЏ РЅР° РїРµСЂРµСЂРёСЃРѕРІРєСѓ РѕРєРЅР°
         case WM_PAINT:
         {
             PAINTSTRUCT ps;
             
             HDC hdc = BeginPaint(hWnd, &ps);
 
-            // Определяем ширину и высоту окна
+            // РћРїСЂРµРґРµР»СЏРµРј С€РёСЂРёРЅСѓ Рё РІС‹СЃРѕС‚Сѓ РѕРєРЅР°
             RECT rect = ps.rcPaint;
             GetClientRect(hWnd, &rect);
          
             int width = rect.right - rect.left;
             int height = rect.bottom - rect.top;
 
-            // Узнаем высоту строки статуса
+            // РЈР·РЅР°РµРј РІС‹СЃРѕС‚Сѓ СЃС‚СЂРѕРєРё СЃС‚Р°С‚СѓСЃР°
             RECT rect_status;
             GetWindowRect(hWndStatusBar, &rect_status);
             int statusBarHeight = rect_status.bottom - rect_status.top;
 
-            height -= statusBarHeight; // Отнимем высоту StatusBar'а
+            height -= statusBarHeight; // РћС‚РЅРёРјРµРј РІС‹СЃРѕС‚Сѓ StatusBar'Р°
             if (height < 0) height = 0;
                       
-            // Вычислим время, которое нужно затратить для рисования одного кадра
+            // Р’С‹С‡РёСЃР»РёРј РІСЂРµРјСЏ, РєРѕС‚РѕСЂРѕРµ РЅСѓР¶РЅРѕ Р·Р°С‚СЂР°С‚РёС‚СЊ РґР»СЏ СЂРёСЃРѕРІР°РЅРёСЏ РѕРґРЅРѕРіРѕ РєР°РґСЂР°
             char repaint_time[500];
             DWORD t1 = GetTickCount();
             
-            glViewport(0, statusBarHeight, width, height); // Область вывода
+            glViewport(0, statusBarHeight, width, height); // РћР±Р»Р°СЃС‚СЊ РІС‹РІРѕРґР°
 
             Draw(width, height);
             
-            SwapBuffers(hdc); // Вывести содержимое буфера на экран
+            SwapBuffers(hdc); // Р’С‹РІРµСЃС‚Рё СЃРѕРґРµСЂР¶РёРјРѕРµ Р±СѓС„РµСЂР° РЅР° СЌРєСЂР°РЅ
 
-            sprintf_s(repaint_time, "Время перерисовки: %d миллисекунд\nВремя: %0.3f секунд\n", GetTickCount() - t1, running_time);
+            sprintf_s(repaint_time, "Р’СЂРµРјСЏ РїРµСЂРµСЂРёСЃРѕРІРєРё: %d РјРёР»Р»РёСЃРµРєСѓРЅРґ\nР’СЂРµРјСЏ: %0.3f СЃРµРєСѓРЅРґ\n", GetTickCount() - t1, running_time);
             
-            // Вывод текста
-            //SetBkMode(hdc, TRANSPARENT); // Цвет фона, на котором будет написан текст 
-            SetBkColor(hdc, RGB(0, 0, 0)); // Черный цвет фона
-            SetTextColor(hdc, RGB(255, 127, 40)); // Цвет текста
-            DrawTextA(hdc, repaint_time, -1, &rect, 0); // Нарисовать текст
+            // Р’С‹РІРѕРґ С‚РµРєСЃС‚Р°
+            //SetBkMode(hdc, TRANSPARENT); // Р¦РІРµС‚ С„РѕРЅР°, РЅР° РєРѕС‚РѕСЂРѕРј Р±СѓРґРµС‚ РЅР°РїРёСЃР°РЅ С‚РµРєСЃС‚ 
+            SetBkColor(hdc, RGB(0, 0, 0)); // Р§РµСЂРЅС‹Р№ С†РІРµС‚ С„РѕРЅР°
+            SetTextColor(hdc, RGB(255, 127, 40)); // Р¦РІРµС‚ С‚РµРєСЃС‚Р°
+            DrawTextA(hdc, repaint_time, -1, &rect, 0); // РќР°СЂРёСЃРѕРІР°С‚СЊ С‚РµРєСЃС‚
             
             EndPaint(hWnd, &ps);
 
@@ -257,22 +221,22 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
         {
             char str[256];
 
-            // Устанавливаем текст в разных частях StatusBar'а
-            // Экранные координаты курсора мыши
+            // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚РµРєСЃС‚ РІ СЂР°Р·РЅС‹С… С‡Р°СЃС‚СЏС… StatusBar'Р°
+            // Р­РєСЂР°РЅРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РєСѓСЂСЃРѕСЂР° РјС‹С€Рё
             sprintf_s(str, "X = %d, Y = %d", LOWORD(lParam), HIWORD(lParam));
             SendMessageA(hWndStatusBar, SB_SETTEXTA, 0, (LPARAM)str);
 
             if (wParam == MK_LBUTTON)
             {
-                // Вычислим, на сколько переместился курсор мыши между двумя событиями WM_MOUSEMOVE
+                // Р’С‹С‡РёСЃР»РёРј, РЅР° СЃРєРѕР»СЊРєРѕ РїРµСЂРµРјРµСЃС‚РёР»СЃСЏ РєСѓСЂСЃРѕСЂ РјС‹С€Рё РјРµР¶РґСѓ РґРІСѓРјСЏ СЃРѕР±С‹С‚РёСЏРјРё WM_MOUSEMOVE
                 int x = LOWORD(lParam), y = HIWORD(lParam);
                 int dx = x - mousePosition.x;
                 int dy = y - mousePosition.y;
 
-                // Изменим матрицу поворота в соответствии с тем, как пользователь переместил курсор мыши
+                // РР·РјРµРЅРёРј РјР°С‚СЂРёС†Сѓ РїРѕРІРѕСЂРѕС‚Р° РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ С‚РµРј, РєР°Рє РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РїРµСЂРµРјРµСЃС‚РёР» РєСѓСЂСЃРѕСЂ РјС‹С€Рё
                 changeRotateMatrix(dx, dy);
 
-                // Сохраним текущую позицию мыши
+                // РЎРѕС…СЂР°РЅРёРј С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ РјС‹С€Рё
                 mousePosition = { x, y };
 
                 InvalidateRect(hWnd, NULL, false);
@@ -282,10 +246,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
         case WM_LBUTTONDOWN:
             
-            // Запоминаем координаты курсора мыши при щелчке
+            // Р—Р°РїРѕРјРёРЅР°РµРј РєРѕРѕСЂРґРёРЅР°С‚С‹ РєСѓСЂСЃРѕСЂР° РјС‹С€Рё РїСЂРё С‰РµР»С‡РєРµ
             mousePosition = { LOWORD(lParam), HIWORD(lParam) };
             
-            // Перерисовать окно
+            // РџРµСЂРµСЂРёСЃРѕРІР°С‚СЊ РѕРєРЅРѕ
             InvalidateRect(hWnd, NULL, false);
             break;
 
@@ -293,7 +257,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 			if (wParam == VK_F1)
             {
-                MessageBoxA(hWnd, "Работу выполнил студент группы ПВ-223 Пахомов В.А.", "О программе", MB_ICONINFORMATION);
+                MessageBoxA(hWnd, "Р Р°Р±РѕС‚Сѓ РІС‹РїРѕР»РЅРёР» СЃС‚СѓРґРµРЅС‚ РіСЂСѓРїРїС‹ РџР’-223 РџР°С…РѕРјРѕРІ Р’.Рђ.", "Рћ РїСЂРѕРіСЂР°РјРјРµ", MB_ICONINFORMATION);
             }
 
             if (wParam == VK_ESCAPE)
@@ -302,27 +266,81 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
             }
             break;
 
-        // Обработка сообщения на изменение размера окна
+        // РћР±СЂР°Р±РѕС‚РєР° СЃРѕРѕР±С‰РµРЅРёСЏ РЅР° РёР·РјРµРЅРµРЅРёРµ СЂР°Р·РјРµСЂР° РѕРєРЅР°
         case WM_SIZE:
 
-            // Подгоняем размеры StatusBar'а под размер окна
+            // РџРѕРґРіРѕРЅСЏРµРј СЂР°Р·РјРµСЂС‹ StatusBar'Р° РїРѕРґ СЂР°Р·РјРµСЂ РѕРєРЅР°
             SendMessageA(hWndStatusBar, WM_SIZE, 0, 0);
 
-            // Перерисовать окно
+            // РџРµСЂРµСЂРёСЃРѕРІР°С‚СЊ РѕРєРЅРѕ
             InvalidateRect(hWnd, NULL, false);
             break;
 
         case WM_TIMER:
-
-            // При срабатывании таймера пересчитаем время от запуска программы
+        {
+            // РџСЂРё СЃСЂР°Р±Р°С‚С‹РІР°РЅРёРё С‚Р°Р№РјРµСЂР° РїРµСЂРµСЃС‡РёС‚Р°РµРј РІСЂРµРјСЏ РѕС‚ Р·Р°РїСѓСЃРєР° РїСЂРѕРіСЂР°РјРјС‹
             running_time = (GetTickCount() - start_time) / 1000.0f;
-           // time += 0.1f;
-            //time = 25.5;
-            // Перерисовать окно
+
+            float current_time = GetTickCount();
+            float play_time_previous = last_time - begin_time;
+            float play_time_current = current_time - begin_time;
+            int fftw_sample_amount = 16384;
+            int slice_end = (play_time_current / 1000) * audioFile.getSampleRate();
+
+            double exp_base_log = std::log(std::pow(MAX_FREQUENCY - MIN_FREQUENCY + 1, 1. / preferred_tiles_amount));
+
+            if (slice_end > fftw_sample_amount) {
+                // Create an array to hold the output (complex numbers)
+                fftw_complex* output = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fftw_sample_amount);
+
+                // Create a plan for the FFT
+                fftw_plan plan = fftw_plan_dft_r2c_1d(fftw_sample_amount, audioFile.samples[0].data() - fftw_sample_amount + slice_end, output, FFTW_ESTIMATE);
+
+                // Execute the FFT
+                fftw_execute(plan);
+
+                std::vector<std::pair<double, int>> prepared_freqs(preferred_tiles_amount, { 0, 0 });
+
+                for (int i = 0; i < (fftw_sample_amount / 2) - 1; i++) {
+                    double current_frequency = audioFile.getSampleRate() * i / fftw_sample_amount;
+
+                    if ((current_frequency - MIN_FREQUENCY + 1) <= 0) continue;
+
+                    double amplitude_index = std::log(current_frequency - MIN_FREQUENCY + 1) / exp_base_log;
+
+                    if (amplitude_index < 0 || amplitude_index >= tiles_amplitudes.size()) break;
+
+                    double amplitude = std::sqrt(std::pow(output[i][0], 2) + std::pow(output[i][1], 2));
+
+                    prepared_freqs[amplitude_index].first += amplitude;
+                    prepared_freqs[amplitude_index].second++;
+                }
+
+                int tmp_actual_tiles_amount = 0;
+
+                for (int i = 0; i < preferred_tiles_amount; i++) {
+                    if (prepared_freqs[i].second == 0) continue;
+
+                    tiles_amplitudes[tmp_actual_tiles_amount] = std::max(
+                        std::min(1., SENSITIVITY * prepared_freqs[i].first / prepared_freqs[i].second),
+                        tiles_amplitudes[tmp_actual_tiles_amount] - (play_time_current - play_time_previous) * gravity);
+
+                    tmp_actual_tiles_amount++;
+                }
+
+                actual_tiles_amount = tmp_actual_tiles_amount;
+
+                // Clean up
+                fftw_destroy_plan(plan);
+                fftw_free(output);
+            }
+
+            last_time = current_time;
+
             InvalidateRect(hWnd, NULL, false);
             break;
-
-        case WM_DESTROY: // Завершение программы
+        }
+        case WM_DESTROY: // Р—Р°РІРµСЂС€РµРЅРёРµ РїСЂРѕРіСЂР°РјРјС‹
             
             wglMakeCurrent(GetDC(hWnd), NULL);
             wglDeleteContext(hglrc);
@@ -330,7 +348,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
             break;
 
         default:
-            // Все сообщения, не обрабатываемые в данной функции, направляются на обработку по умолчанию
+            // Р’СЃРµ СЃРѕРѕР±С‰РµРЅРёСЏ, РЅРµ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјС‹Рµ РІ РґР°РЅРЅРѕР№ С„СѓРЅРєС†РёРё, РЅР°РїСЂР°РІР»СЏСЋС‚СЃСЏ РЅР° РѕР±СЂР°Р±РѕС‚РєСѓ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
             return DefWindowProcA(hWnd, message, wParam, lParam);
     }
 

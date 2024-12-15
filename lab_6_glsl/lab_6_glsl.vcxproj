@@ -73,15 +73,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\vladi\Workspace\C++\comp_graphics\lab_6_glsl\fftw\x32;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\vladi\Workspace\C++\comp_graphics\lab_6_glsl\fftw\x32;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\vladi\Workspace\C++\comp_graphics\lab_6_glsl\fftw\x64;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Users\vladi\Workspace\C++\comp_graphics\lab_6_glsl\fftw\x64;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -93,7 +97,13 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);winmm.lib;libfftw3-3.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\vladi\Workspace\C++\comp_graphics\lab_6_glsl\win32_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>echo D | xcopy "$(ProjectDir)shaders" "$(TargetDir)shaders" /s /e /h /Y
+echo D | xcopy "$(ProjectDir)textures" "$(TargetDir)textures" /s /e /h /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -109,7 +119,13 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);winmm.lib;libfftw3-3.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\vladi\Workspace\C++\comp_graphics\lab_6_glsl\win32_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>echo D | xcopy "$(ProjectDir)shaders" "$(TargetDir)shaders" /s /e /h /Y
+echo D | xcopy "$(ProjectDir)textures" "$(TargetDir)textures" /s /e /h /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -121,7 +137,13 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);winmm.lib;libfftw3-3.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\vladi\Workspace\C++\comp_graphics\lab_6_glsl\win64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>echo D | xcopy "$(ProjectDir)shaders" "$(TargetDir)shaders" /s /e /h /Y
+echo D | xcopy "$(ProjectDir)textures" "$(TargetDir)textures" /s /e /h /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -137,19 +159,20 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);winmm.lib;libfftw3-3.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\vladi\Workspace\C++\comp_graphics\lab_6_glsl\win64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>echo D | xcopy "$(ProjectDir)shaders" "$(TargetDir)shaders" /s /e /h /Y
+echo D | xcopy "$(ProjectDir)textures" "$(TargetDir)textures" /s /e /h /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ingridients\glad\src\glad.c" />
-    <ClCompile Include="ingridients\texture.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ingridients\cookbookogl.h" />
-    <ClInclude Include="ingridients\glad\include\glad\glad.h" />
-    <ClInclude Include="ingridients\glad\include\KHR\khrplatform.h" />
-    <ClInclude Include="ingridients\stb\stb_image.h" />
-    <ClInclude Include="ingridients\texture.h" />
+    <ClInclude Include="AudioFile.h" />
+    <ClInclude Include="BMP.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Painter.h" />
     <ClInclude Include="Vertex.h" />
@@ -158,9 +181,12 @@
     <Text Include="opengl_error.log" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\equalizer_square.frag" />
-    <None Include="shaders\skybox.frag" />
-    <None Include="shaders\srt_transform.vert" />
+    <Image Include="textures\stars.bmp" />
+    <Image Include="textures\tile.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\main.frag" />
+    <None Include="shaders\main.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
