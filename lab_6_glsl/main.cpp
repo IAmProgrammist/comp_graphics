@@ -143,8 +143,10 @@ gives better amplitude recognition results but produces delays. Default = 14.
 
     if (maxTilesArg) {
         auto tmp = args::get(maxTilesArg);
-        if (tmp > 0)
+        if (tmp > 0) {
             MAX_TILES_AMOUNT = tmp;
+            tiles_amplitudes = std::vector<double>(MAX_TILES_AMOUNT, 0);
+        }
     }
 
     if (gravityArg) {
