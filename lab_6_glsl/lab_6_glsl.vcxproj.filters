@@ -9,6 +9,7 @@
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="BMP.h" />
     <ClInclude Include="AudioFile.h" />
+    <ClInclude Include="args.hxx" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="opengl_error.log" />

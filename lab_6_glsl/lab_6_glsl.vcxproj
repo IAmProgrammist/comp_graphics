@@ -171,6 +171,7 @@ echo D | xcopy "$(ProjectDir)textures" "$(TargetDir)textures" /s /e /h /Y</Comma
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="args.hxx" />
     <ClInclude Include="AudioFile.h" />
     <ClInclude Include="BMP.h" />
     <ClInclude Include="Matrix.h" />

@@ -18,15 +18,17 @@
 float running_time = 0;
 float begin_time = 0;
 float last_time = 0;
-int preferred_tiles_amount = 64;
 int actual_tiles_amount = 0;
-double gravity = 0.001;
-double tiles_spacing = 0.01;
-double MAX_FREQUENCY = 20000;
+
+int MAX_TILES_AMOUNT = 64;
+double GRAVITY = 0.001;
+double TILES_SPACING = 0.01;
+double MAX_FREQUENCY = 15000;
 double MIN_FREQUENCY = 20;
 double SENSITIVITY = 0.005;
+int SAMPLE_AMOUNT = 16384;
 
-std::vector<double> tiles_amplitudes(preferred_tiles_amount, 0);
+std::vector<double> tiles_amplitudes(MAX_TILES_AMOUNT, 0);
 
 AudioFile<double> audioFile;
 
@@ -104,107 +106,41 @@ GLuint CreateShader(GLenum type, const char* source)
 	return shader;
 }
 
+std::vector<char> load_vector(std::istream& in) {
+	std::vector<char> result(0);
+	char c;
+	while (!in.eof()) {
+		result.push_back(in.get());
+	}
+	return result;
+}
+
 
 // Функция для инициализации OpenGL
 void InitOpenGL() {
-	std::fstream vertHFile("C:\\Users\\vladi\\Workspace\\C++\\comp_graphics\\lab_6_glsl\\shaders\\main.vert", std::ios::in | std::ios::binary);
+	std::fstream vertHFile("shaders\\main.vert", std::ios::in);
 	if (!vertHFile.is_open()) throw std::invalid_argument("Error: File Not Found.");
 
-	vertHFile.seekg(0, std::ios::end);
-	std::size_t vertLength = vertHFile.tellg();
-	vertHFile.seekg(0, std::ios::beg);
-	std::vector<char> vertFileInfo(vertLength);
-	vertHFile.read(reinterpret_cast<char*>(vertFileInfo.data()), 54);
+	std::vector<char> vertFileInfo;
+	vertHFile.seekg(0, std::ios_base::end);
+	std::streampos vertFileSize = vertHFile.tellg();
+	vertFileInfo.resize(vertFileSize);
+	vertHFile.seekg(0, std::ios_base::beg);
+	vertHFile.read(&vertFileInfo[0], vertFileSize);
 
-	std::fstream fragHFile("C:\\Users\\vladi\\Workspace\\C++\\comp_graphics\\lab_6_glsl\\shaders\\main.frag", std::ios::in | std::ios::binary);
+	std::fstream fragHFile("shaders\\main.frag", std::ios::in);
 	if (!fragHFile.is_open()) throw std::invalid_argument("Error: File Not Found.");
 
-	fragHFile.seekg(0, std::ios::end);
-	std::size_t fragLength = fragHFile.tellg();
-	fragHFile.seekg(0, std::ios::beg);
-	std::vector<char> fragFileInfo(fragLength);
-	fragHFile.read(reinterpret_cast<char*>(fragFileInfo.data()), 54);
-
-	// Текст вершинного шейдера
-	const char* vertexShaderSource = R"(
-#version 430
-
-// О точке
-layout (location=0) in vec3 VertexPosition;
-layout (location=1) in vec2 VertexTexPosition;
-layout (location=2) in vec3 VertexNormal;
-
-// О трансформации точки
-uniform mat4 ModelViewMatrix;                             // Преобразование модели в мире
-uniform mat3 NormalMatrix;                                // ModelViewMatrix ** -1
-uniform mat4 ProjectionMatrix;                            // Матрица проекции
-uniform mat4 MVP;                                         // ProjectionMatrix * ModelViewMatrix
-
-// О свете в сцене
-struct LightInfo {
-    vec4 Position;
-    vec3 Intensity;
-};
-uniform LightInfo lights[3];
-
-// Характеристики материала
-uniform vec3 Kd;         // К отражения рассеянного света
-uniform vec3 Ka;         // К отражения фонового света
-uniform vec3 Ks;         // К зеркального отражения
-uniform float Shininess; // Показатель степени зеркального отражения
-uniform vec3 Emission;   // Свечение
-
-
-// Выходные параметры
-out vec3 LightIntensity;
-out vec2 TexCoord;
-
-vec3 ads( int lightIndex, vec4 position, vec3 norm )
-{
-    vec3 s = normalize(vec3(lights[lightIndex].Position - position));
-    vec3 v = normalize((-position).xyz);
-    vec3 r = reflect( -s, norm );
-    vec3 I = lights[lightIndex].Intensity;
-
-    return I * ( Ka + Kd * max( dot(s, norm), 0.0 ) + Ks * pow( max( dot(r,v), 0.0 ), Shininess ) );
-}
-
-void main()
-{
-    TexCoord = VertexTexPosition;
-
-	vec3 eyeNorm = normalize( NormalMatrix * VertexNormal);
-    vec4 eyePosition = ModelViewMatrix * vec4(VertexPosition,1.0);
-
-    LightIntensity = Emission;
-
-    for( int i = 0; i < 3; i++ )
-       LightIntensity += ads( i, eyePosition, eyeNorm );
-   
-    gl_Position = MVP * vec4(VertexPosition,1.0);
-}
-    )";
-
-	// Текст фрагментного шейдера
-	const char* fragmentShaderSource = R"(
-#version 430
-
-in vec3 LightIntensity;
-in vec2 TexCoord;
-
-layout( binding = 0 ) uniform sampler2D BaseTexture;
-
-layout( location = 0 ) out vec4 FragColor;
-
-void main() {
-    vec4 texColor = texture(BaseTexture, TexCoord) * vec4(LightIntensity, 1.0);
-	FragColor = texColor;
-}
-    )";
+	std::vector<char> fragFileInfo;
+	fragHFile.seekg(0, std::ios_base::end);
+	std::streampos fragFileSize = fragHFile.tellg();
+	fragFileInfo.resize(fragFileSize);
+	fragHFile.seekg(0, std::ios_base::beg);
+	fragHFile.read(&fragFileInfo[0], fragFileSize);
 
 	// Компиляция шейдеров
-	GLuint vertexShader = CreateShader(GL_VERTEX_SHADER, vertexShaderSource);
-	GLuint fragmentShader = CreateShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+	GLuint vertexShader = CreateShader(GL_VERTEX_SHADER, vertFileInfo.data());
+	GLuint fragmentShader = CreateShader(GL_FRAGMENT_SHADER, fragFileInfo.data());
 
 	// Создание шейдерной программы
 	shaderProgram = glCreateProgram();
@@ -256,10 +192,10 @@ void DrawSoundTiles(GLuint shaderProgram, int width, int height) {
 	std::vector<float> positionData;
 	std::vector<float> normalsData;
 	std::vector<float> texCoordsData;
-	float tile_width = (2 + tiles_spacing * (1 - actual_tiles_amount)) / actual_tiles_amount;
+	float tile_width = (2 + TILES_SPACING * (1 - actual_tiles_amount)) / actual_tiles_amount;
 
 	for (int i = 0; i < actual_tiles_amount; i++) {
-		float x_left = -1 + i * (tile_width + tiles_spacing);
+		float x_left = -1 + i * (tile_width + TILES_SPACING);
 		float x_rght = x_left + tile_width;
 		float ampl = tiles_amplitudes[i];
 		float z_tile_width = tile_width / 2;
@@ -474,8 +410,8 @@ void DrawSoundTiles(GLuint shaderProgram, int width, int height) {
 	glUniform3f(lights0IntensityLocation, 0, 0, 1);
 	glUniform3f(lights1IntensityLocation, 1, 1, 1);
 	glUniform3f(lights2IntensityLocation, 0, 0, 0);
-	glUniform4f(lights0PositionLocation, 1, 0, 0, 0);
-	glUniform4f(lights1PositionLocation, -1, .0, 0, 0);
+	glUniform4f(lights0PositionLocation, std::sin(running_time * 5), 0, 0, 0);
+	glUniform4f(lights1PositionLocation, std::sin(3.14 + running_time * 5), .0, 0, 0);
 	glUniform4f(lights2PositionLocation, 0, 0, 0, 0);
 
 	GLuint vboHandles[4];

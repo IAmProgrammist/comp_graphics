@@ -7,6 +7,7 @@
 #include "gl/gl.h"
 #include "AudioFile.h"
 #include <fftw3.h>
+#include "args.hxx"
 
 #include <iostream>
 
@@ -23,9 +24,32 @@
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 
-HWND hWndStatusBar; // Дескриптор компонента StatusBar
-
 HGLRC hglrc; // Контекст OpenGL 
+
+void get_command_line_args(int* argc, char*** argv)
+{
+    // Get the command line arguments as wchar_t strings
+    wchar_t** wargv = CommandLineToArgvW(GetCommandLineW(), argc);
+    if (!wargv) { *argc = 0; *argv = NULL; return; }
+
+    // Count the number of bytes necessary to store the UTF-8 versions of those strings
+    int n = 0;
+    for (int i = 0; i < *argc; i++)
+        n += WideCharToMultiByte(CP_UTF8, 0, wargv[i], -1, NULL, 0, NULL, NULL) + 1;
+
+    // Allocate the argv[] array + all the UTF-8 strings
+    *argv = (char**)malloc((*argc + 1) * sizeof(char*) + n);
+    if (!*argv) { *argc = 0; return; }
+
+    // Convert all wargv[] --> argv[]
+    char* arg = (char*)&((*argv)[*argc + 1]);
+    for (int i = 0; i < *argc; i++)
+    {
+        (*argv)[i] = arg;
+        arg += WideCharToMultiByte(CP_UTF8, 0, wargv[i], -1, arg, n, NULL, NULL) + 1;
+    }
+    (*argv)[*argc] = NULL;
+}
 
 // Создание консоли для вывода сообщений об ошибках
 void CreateLogConsole(void)
@@ -49,8 +73,100 @@ void CreateLogConsole(void)
 
 int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs, int nWinMode)
 {
-    textureTile = BMP("C:\\Users\\vladi\\Workspace\\C++\\comp_graphics\\x64\\Debug\\assets\\tile.bmp");
-    textureBackground = BMP("C:\\Users\\vladi\\Workspace\\C++\\comp_graphics\\x64\\Debug\\assets\\stars.bmp");
+    int argc = 0;
+    char **argv = NULL;
+    get_command_line_args(&argc, &argv);
+
+    args::ArgumentParser parser(
+        "There Is Sound In Space! A sound visualization application made by Pakhomov Vladislav Andreevich", 
+        "Have fun!");
+    args::HelpFlag help(parser, "help", "Display help menu", { 'h', "help" });
+    args::Positional<std::string> audioPathArg(parser, "audiopath", R"(
+Required. Audio path to be played in .wav format with sample rate 44100 Hz. 
+Potentially you can use bigger sample rate but it wasn't tested 
+and could affect quality of frequencies recognition. 
+Using audio with less frequency cuts down frequencies, so it's not recommended as well.
+Use mono signal, since application can't work with stereo.
+)");
+    args::ValueFlag<int> maxTilesArg(parser, "maxtiles", R"(
+Optional. Limiter of amount of tiles. Actual amount of tiles depends on samples amount that are
+processed every step. Default = 64.
+)", {'t', "tiles"});
+    args::ValueFlag<double> gravityArg(parser, "gravity", R"(
+Optional. This value affects how fast tiles are falling down. The bigger value the
+bigger velocity of falling. Default = 0.001.
+)", { 'g', "gravity" });
+    args::ValueFlag<double> sensitivityArg(parser, "sensitivity", R"(
+Optional. This value affects sensitivity of frequency amplitude. The bigger value the
+bigger sensitivity. Default = 0.005.
+)", { 's', "sensitivity" });
+    args::ValueFlag<int> qualityArg(parser, "quality", R"(
+Optional. Affects amount of samples being processed. Insert 1-15. Bigger value 
+gives better amplitude recognition results but produces delays. Default = 14.
+)", { 'q', "quality" });
+    try
+    {
+        parser.ParseCLI(argc, argv);
+    }
+    catch (args::Help)
+    {
+        std::ostringstream message;
+        message << parser;
+        MessageBoxA(NULL, message.str().c_str(), "Parse info", MB_ICONINFORMATION);
+        return 0;
+    }
+    catch (args::ParseError e)
+    {
+        std::ostringstream message;
+        message << e.what() << std::endl;
+        message << parser;
+        MessageBoxA(NULL, message.str().c_str(), "Parse info", MB_ICONINFORMATION);
+        return 1;
+    }
+    catch (args::ValidationError e)
+    {
+        std::ostringstream message;
+        message << e.what() << std::endl;
+        message << parser;
+        MessageBoxA(NULL, message.str().c_str(), "Parse info", MB_ICONINFORMATION);
+        return 1;
+    }
+
+    std::string audioPath;
+    if (audioPathArg) {
+        audioPath = args::get(audioPathArg);
+    } else {
+        MessageBoxA(NULL, "Audio path is required. Call program with argument -h for details", "Parse info", MB_ICONERROR);
+
+        return 1;
+    }
+
+    if (maxTilesArg) {
+        auto tmp = args::get(maxTilesArg);
+        if (tmp > 0)
+            MAX_TILES_AMOUNT = tmp;
+    }
+
+    if (gravityArg) {
+        auto tmp = args::get(gravityArg);
+        if (tmp > 0)
+            GRAVITY = tmp;
+    }
+
+    if (sensitivityArg) {
+        auto tmp = args::get(sensitivityArg);
+        if (tmp > 0)
+            SENSITIVITY = tmp;
+    }
+
+    if (qualityArg) {
+        auto tmp = args::get(qualityArg);
+        if (tmp > 0 && tmp < 16)
+            SAMPLE_AMOUNT = 1 << tmp;
+    }
+
+    textureTile = BMP("textures\\tile.bmp");
+    textureBackground = BMP("textures\\stars.bmp");
 
     char szWinName[] = "Graphics Window Class"; // Имя класса окна
 
@@ -73,7 +189,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs,
         return 0;
 
     hWnd = CreateWindowA(szWinName, // Создать окно
-        "Лабораторная работа №6. Каркасное приложение на OpenGL",
+        "There Is Sound In Space!",
         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, // Стиль окна
         CW_USEDEFAULT, // x-координата
         CW_USEDEFAULT, // y-координата
@@ -84,25 +200,12 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs,
         hThisInstance, // Дескриптор приложения
         NULL); // Без дополнительных аргументов
 
-    // Создаём компонент типа StatusBar
-    hWndStatusBar = CreateWindowExA(
-        0, STATUSCLASSNAMEA, NULL,
-        WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
-        0, 0, 0, 0,
-        hWnd, (HMENU) 10001,
-        hThisInstance, NULL
-    );
-
-    // Настройка частей StatusBar'а
-    int statwidths[] = { 150, 300, -1 };
-    SendMessageA(hWndStatusBar, SB_SETPARTS, sizeof(statwidths) / sizeof(int), (LPARAM)statwidths);
-
     ShowWindow(hWnd, nWinMode); // Показать окно
 
     setvbuf(stderr, NULL, _IONBF, 0); // Отключение буферизации потока ошибок stderr для того, чтобы лог-файл, в который выводится этот поток обновлялся сразу
     
     // Создание консоли
-    //CreateLogConsole();
+    // CreateLogConsole();
     
     // Получение контекста устройства отображения
     HDC hdc = GetDC(hWnd);
@@ -133,8 +236,8 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInst, LPSTR lpszArgs,
 
     UpdateWindow(hWnd); // Перерисовать окно
 
-    audioFile.load("C:/Users/vladi/Downloads/Daft-Punk-Touch.wav");
-    PlaySound(L"C:/Users/vladi/Downloads/Daft-Punk-Touch.wav", hThisInstance, SND_FILENAME | SND_ASYNC);
+    audioFile.load(audioPath);
+    PlaySoundA(audioPath.c_str(), hThisInstance, SND_FILENAME | SND_ASYNC);
 
     begin_time = GetTickCount();
     last_time = begin_time;
@@ -186,31 +289,17 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
             int width = rect.right - rect.left;
             int height = rect.bottom - rect.top;
 
-            // Узнаем высоту строки статуса
-            RECT rect_status;
-            GetWindowRect(hWndStatusBar, &rect_status);
-            int statusBarHeight = rect_status.bottom - rect_status.top;
-
-            height -= statusBarHeight; // Отнимем высоту StatusBar'а
             if (height < 0) height = 0;
                       
             // Вычислим время, которое нужно затратить для рисования одного кадра
             char repaint_time[500];
             DWORD t1 = GetTickCount();
             
-            glViewport(0, statusBarHeight, width, height); // Область вывода
+            glViewport(0, 0, width, height); // Область вывода
 
             Draw(width, height);
             
             SwapBuffers(hdc); // Вывести содержимое буфера на экран
-
-            sprintf_s(repaint_time, "Время перерисовки: %d миллисекунд\nВремя: %0.3f секунд\n", GetTickCount() - t1, running_time);
-            
-            // Вывод текста
-            //SetBkMode(hdc, TRANSPARENT); // Цвет фона, на котором будет написан текст 
-            SetBkColor(hdc, RGB(0, 0, 0)); // Черный цвет фона
-            SetTextColor(hdc, RGB(255, 127, 40)); // Цвет текста
-            DrawTextA(hdc, repaint_time, -1, &rect, 0); // Нарисовать текст
             
             EndPaint(hWnd, &ps);
 
@@ -219,13 +308,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
         case WM_MOUSEMOVE:
         {
-            char str[256];
-
-            // Устанавливаем текст в разных частях StatusBar'а
-            // Экранные координаты курсора мыши
-            sprintf_s(str, "X = %d, Y = %d", LOWORD(lParam), HIWORD(lParam));
-            SendMessageA(hWndStatusBar, SB_SETTEXTA, 0, (LPARAM)str);
-
             if (wParam == MK_LBUTTON)
             {
                 // Вычислим, на сколько переместился курсор мыши между двумя событиями WM_MOUSEMOVE
@@ -257,7 +339,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 			if (wParam == VK_F1)
             {
-                MessageBoxA(hWnd, "Работу выполнил студент группы ПВ-223 Пахомов В.А.", "О программе", MB_ICONINFORMATION);
+                MessageBoxA(hWnd, "Made by student of group SC-223 Pakhomov Vladislav Andreevich", "About", MB_ICONINFORMATION);
             }
 
             if (wParam == VK_ESCAPE)
@@ -268,9 +350,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
         // Обработка сообщения на изменение размера окна
         case WM_SIZE:
-
-            // Подгоняем размеры StatusBar'а под размер окна
-            SendMessageA(hWndStatusBar, WM_SIZE, 0, 0);
 
             // Перерисовать окно
             InvalidateRect(hWnd, NULL, false);
@@ -284,25 +363,24 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
             float current_time = GetTickCount();
             float play_time_previous = last_time - begin_time;
             float play_time_current = current_time - begin_time;
-            int fftw_sample_amount = 16384;
             int slice_end = (play_time_current / 1000) * audioFile.getSampleRate();
 
-            double exp_base_log = std::log(std::pow(MAX_FREQUENCY - MIN_FREQUENCY + 1, 1. / preferred_tiles_amount));
+            double exp_base_log = std::log(std::pow(MAX_FREQUENCY - MIN_FREQUENCY + 1, 1. / MAX_TILES_AMOUNT));
 
-            if (slice_end > fftw_sample_amount) {
+            if (slice_end > SAMPLE_AMOUNT) {
                 // Create an array to hold the output (complex numbers)
-                fftw_complex* output = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fftw_sample_amount);
+                fftw_complex* output = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * SAMPLE_AMOUNT);
 
                 // Create a plan for the FFT
-                fftw_plan plan = fftw_plan_dft_r2c_1d(fftw_sample_amount, audioFile.samples[0].data() - fftw_sample_amount + slice_end, output, FFTW_ESTIMATE);
+                fftw_plan plan = fftw_plan_dft_r2c_1d(SAMPLE_AMOUNT, audioFile.samples[0].data() - SAMPLE_AMOUNT + slice_end, output, FFTW_ESTIMATE);
 
                 // Execute the FFT
                 fftw_execute(plan);
 
-                std::vector<std::pair<double, int>> prepared_freqs(preferred_tiles_amount, { 0, 0 });
+                std::vector<std::pair<double, int>> prepared_freqs(MAX_TILES_AMOUNT, { 0, 0 });
 
-                for (int i = 0; i < (fftw_sample_amount / 2) - 1; i++) {
-                    double current_frequency = audioFile.getSampleRate() * i / fftw_sample_amount;
+                for (int i = 0; i < (SAMPLE_AMOUNT / 2) - 1; i++) {
+                    double current_frequency = audioFile.getSampleRate() * i / SAMPLE_AMOUNT;
 
                     if ((current_frequency - MIN_FREQUENCY + 1) <= 0) continue;
 
@@ -318,12 +396,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
                 int tmp_actual_tiles_amount = 0;
 
-                for (int i = 0; i < preferred_tiles_amount; i++) {
+                for (int i = 0; i < MAX_TILES_AMOUNT; i++) {
                     if (prepared_freqs[i].second == 0) continue;
 
                     tiles_amplitudes[tmp_actual_tiles_amount] = std::max(
                         std::min(1., SENSITIVITY * prepared_freqs[i].first / prepared_freqs[i].second),
-                        tiles_amplitudes[tmp_actual_tiles_amount] - (play_time_current - play_time_previous) * gravity);
+                        tiles_amplitudes[tmp_actual_tiles_amount] - (play_time_current - play_time_previous) * GRAVITY);
 
                     tmp_actual_tiles_amount++;
                 }

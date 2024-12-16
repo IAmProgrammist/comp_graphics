@@ -1,32 +1,27 @@
 #version 430
 
-// О точке
 layout (location=0) in vec3 VertexPosition;
 layout (location=1) in vec2 VertexTexPosition;
 layout (location=2) in vec3 VertexNormal;
 
-// О трансформации точки
-uniform mat4 ModelViewMatrix;                             // Преобразование модели в мире
-uniform mat3 NormalMatrix;                                // ModelViewMatrix ** -1
-uniform mat4 ProjectionMatrix;                            // Матрица проекции
-uniform mat4 MVP;                                         // ProjectionMatrix * ModelViewMatrix
+uniform mat4 ModelViewMatrix;   
+uniform mat3 NormalMatrix;   
+uniform mat4 ProjectionMatrix;      
+uniform mat4 MVP;     
 
-// О свете в сцене
 struct LightInfo {
     vec4 Position;
     vec3 Intensity;
 };
 uniform LightInfo lights[3];
 
-// Характеристики материала
-uniform vec3 Kd;         // К отражения рассеянного света
-uniform vec3 Ka;         // К отражения фонового света
-uniform vec3 Ks;         // К зеркального отражения
-uniform float Shininess; // Показатель степени зеркального отражения
-uniform vec3 Emission;   // Свечение
+uniform vec3 Kd;      
+uniform vec3 Ka;      
+uniform vec3 Ks;       
+uniform float Shininess;
+uniform vec3 Emission;
 
 
-// Выходные параметры
 out vec3 LightIntensity;
 out vec2 TexCoord;
 
