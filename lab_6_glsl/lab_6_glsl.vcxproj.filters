@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Matrix.h" />
+    <ClInclude Include="Painter.h" />
+    <ClInclude Include="Vertex.h" />
+    <ClInclude Include="BMP.h" />
+    <ClInclude Include="AudioFile.h" />
+    <ClInclude Include="args.hxx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="opengl_error.log" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="textures\tile.bmp">
+      <Filter>textures</Filter>
+    </Image>
+    <Image Include="textures\stars.bmp">
+      <Filter>textures</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="textures">
+      <UniqueIdentifier>{25db9992-dcec-4ed6-b620-11e6769ec297}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{0279f5a3-7395-4088-9ea3-1075d5f2e030}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\main.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\main.frag">
+      <Filter>shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>
