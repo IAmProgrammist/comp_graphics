@@ -98,7 +98,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);winmm.lib;libfftw3-3.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\vladi\Workspace\C++\comp_graphics\lab_6_glsl\win32_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)win32_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>echo D | xcopy "$(ProjectDir)shaders" "$(TargetDir)shaders" /s /e /h /Y
@@ -120,7 +120,7 @@ echo D | xcopy "$(ProjectDir)textures" "$(TargetDir)textures" /s /e /h /Y</Comma
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);winmm.lib;libfftw3-3.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\vladi\Workspace\C++\comp_graphics\lab_6_glsl\win32_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)win32_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>echo D | xcopy "$(ProjectDir)shaders" "$(TargetDir)shaders" /s /e /h /Y
@@ -138,7 +138,7 @@ echo D | xcopy "$(ProjectDir)textures" "$(TargetDir)textures" /s /e /h /Y</Comma
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);winmm.lib;libfftw3-3.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\vladi\Workspace\C++\comp_graphics\lab_6_glsl\win64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)win64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>echo D | xcopy "$(ProjectDir)shaders" "$(TargetDir)shaders" /s /e /h /Y
@@ -160,7 +160,7 @@ echo D | xcopy "$(ProjectDir)textures" "$(TargetDir)textures" /s /e /h /Y</Comma
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);winmm.lib;libfftw3-3.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\vladi\Workspace\C++\comp_graphics\lab_6_glsl\win64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)win64_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>echo D | xcopy "$(ProjectDir)shaders" "$(TargetDir)shaders" /s /e /h /Y
